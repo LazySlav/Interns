@@ -11,7 +11,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.sql import func
 
-from databases import Database
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -27,5 +26,3 @@ notes = Table(
     Column("created_date", DateTime, default=func.now(), nullable=False),
 )
 
-# databases query builder
-database = Database(DATABASE_URL)

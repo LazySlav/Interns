@@ -10,7 +10,8 @@ services:
     ports:
       - 8002:8000
     environment:
-      - DATABASE_URL=postgresql://hello_fastapi:hello_fastapi@db/hello_fastapi_dev
+        # ? is this even safe
+      - DATABASE_URL=postgresql://root:k4Q46wUg76@db/interns
   db:
     image: postgres:15.1-alpine
     volumes:
@@ -18,9 +19,9 @@ services:
     expose:
       - 5432
     environment:
-      - POSTGRES_USER=hello_fastapi
-      - POSTGRES_PASSWORD=hello_fastapi
-      - POSTGRES_DB=hello_fastapi_dev
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=k4Q46wUg76
+      - POSTGRES_DB=interns
 
 volumes:
   postgres_data:

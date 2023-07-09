@@ -1,21 +1,18 @@
+"""
+This file is for connecting routers and connecting to database
+"""
+
+
 from fastapi import FastAPI
 
-from app.db import engine, database, metadata
-from app.api import notes, ping
-
+from app.tables.companies import engine, metadata
+# from app.routers import companies,curators,mentors,students
+from app.routers import companies
 metadata.create_all(engine)
 
 app = FastAPI()
 
-
-@app.on_event("startup")
-async def startup():
-    await database.connect()
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    await database.disconnect()
-
-app.include_router(ping.router)
-app.include_router(notes.router, prefix="/notes", tags=["notes"])
+app.include_router(companies.router, prefix="/companies")
+# app.include_router(curators.router, prefix="/curators")
+# app.include_router(mentors.router, prefix="/mentors")
+# app.include_router(students.router, prefix="/students") 
