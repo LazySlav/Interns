@@ -7,11 +7,14 @@ pytest
 httpx
 email-validator
 
-#postgresql
-psycopg2-binary
-#asyncpg
-SQLAlchemy
+#middleware
+#psycopg2-binary
+asyncpg
+fastapi-async-sqlalchemy
 
 #pydantic
 pydantic-extra-types
 phonenumbers
+
+#SQLAlchemy
+SQLAlchemy

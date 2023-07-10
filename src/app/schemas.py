@@ -11,14 +11,14 @@ from pydantic import BaseModel, Field, field_validator, FutureDatetime
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
 
-class Human(BaseModel):
+class HumanModel(BaseModel):
   name: str = Field(..., max_length=50)
   surname: str = Field(..., max_length=50)
   patronymic: str = Field(..., max_length=50)
   mail: str = Field(..., max_length=50)
   phone: PhoneNumber
 
-class Company(BaseModel):
+class CompanyModel(BaseModel):
   company_id: UUID = Field(default_factory=uuid4)
   name: str = Field(..., min_length=3, max_length=50)
   legal_address: str = Field(..., min_length=3, max_length=100)
@@ -42,7 +42,7 @@ class VacancyStatus(Enum):
   completed = "completed"
    
 
-class Vacancy(BaseModel):
+class VacancyModel(BaseModel):
   vacancy_id: UUID = Field(default_factory=uuid4)
   # ? should there be checks as well or class's are enough
   company_id: UUID
@@ -56,22 +56,22 @@ class Vacancy(BaseModel):
   description: str
 
 
-class University(BaseModel):
+class UniversityModel(BaseModel):
   university_name: str = Field(..., max_length=250)
 
 
-class Curator(Human):
+class CuratorModel(HumanModel):
   curator_id: UUID = Field(default_factory=uuid4)
-  university: University
+  university: UniversityModel
   recommended: list[tuple[UUID,str]] = [()] # TODO: max_length
 
 
-class Mentor(Human):
+class MentorModel(HumanModel):
   mentor_id: UUID = Field(default_factory=uuid4)
   curator_id: UUID
 
 
-class Student(Human):
+class StudentModel(HumanModel):
   student_id: UUID = Field(default_factory=uuid4)
   mentor_id: UUID
   profession: str = Field(..., max_length=50)
@@ -82,7 +82,7 @@ class TaskStatus(Enum):
   # TODO: Task statuses
   ...
 
-class Task(BaseModel):
+class TaskModel(BaseModel):
   task_id: UUID = Field(default_factory=uuid4)
   mentor_id: UUID
   student_id: UUID
@@ -90,13 +90,13 @@ class Task(BaseModel):
   status: TaskStatus
 
 
-class Chat(BaseModel):
+class ChatModel(BaseModel):
   chat_id: UUID = Field(default_factory=uuid4)
   company_id: UUID
   student_id: UUID
 
 
-class Messages(BaseModel):
+class MessageModel(BaseModel):
   message_id: UUID = Field(default_factory=uuid4)
   chat_id: UUID
   body: str = Field(..., max_length=1000)

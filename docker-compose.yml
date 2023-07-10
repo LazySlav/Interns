@@ -11,7 +11,7 @@ services:
       - 8002:8000
     environment:
         # ? is this even safe
-      - DATABASE_URL=postgresql://root:k4Q46wUg76@db/interns
+      - DATABASE_URL=postgresql+asyncpg://root:k4Q46wUg76@db/interns
   db:
     image: postgres:15.1-alpine
     volumes:
