@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import UUID, uuid4
 from dataclasses import dataclass
+from sqlalchemy import types
 
 Base = declarative_base()
 
@@ -31,11 +32,18 @@ class CompanyModel(Base):
     description = Column(VARCHAR(500), nullable=False)
 
 
-@dataclass
-class Workers:
-    def __init__(self, type: str, count: int):
-        self.type = None
-        self.count = 0
+class Workers(types.TypeDecorator):
+    impl = types.String
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            profession, count = value
+            return f"{profession},{count}"
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            profession, count = value.split(",")
+            return (profession, int(count))
 
 class Vacancy(Base):
     __tablename__ = 'vacancies'
@@ -56,11 +64,19 @@ class Vacancy(Base):
 class University(Base):
    university_name = Column(VARCHAR())  
 
-@dataclass
-class Recommend:
-    def __init__(self, student: UUID, comment: VARCHAR(250)):
-        self.student = None
-        self.comment = None
+
+class Recommend(types.TypeDecorator):
+    impl = types.String
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            student_id, comment = value
+            return f"{student_id},{comment}"
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            student_id, comment = value.split(",")
+            return (student_id, comment)
 
 class Curator(Human):
   curator_id = Column(UUID, primary_key=True)
@@ -92,7 +108,6 @@ class Student(Human):
 
 
 class TaskStatus(Enum):
-  # TODO: Task statuses
   ...
 
 class Task(Base):
@@ -101,7 +116,7 @@ class Task(Base):
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
     student_id = Column(UUID(as_uuid=True), ForeignKey('students.student_id'), nullable=False)
     description = Column(VARCHAR(1000), nullable=False)
-    status = Column(VARCHAR(30), nullable=False)
+    status = Column(TaskStatus(), nullable=False)
 
     mentor = relationship('Mentor', backref='tasks', lazy=True)
     student = relationship('Student', backref='tasks', lazy=True)
