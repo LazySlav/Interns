@@ -1,6 +1,5 @@
 from sqlalchemy import ForeignKey, Table, Index, Column, \
-                       DateTime, PrimaryKeyConstraint, \
-                       UniqueConstraint, ForeignKeyConstraint, TIMESTAMP
+                       DateTime, TIMESTAMP
 from sqlalchemy.dialects.postgresql import TEXT, DATE, \
                        BOOLEAN, ARRAY, VARCHAR, UUID
 from sqlalchemy.ext.declarative import declarative_base
@@ -12,15 +11,13 @@ from dataclasses import dataclass
 Base = declarative_base()
 
 
-# class Human(Base):
-#   name = Column(VARCHAR(100))
-#   surname = Column(VARCHAR(100))
-#   patronymic = Column(VARCHAR(100))
-#   mail = Column(VARCHAR(100))
+class Human(Base):
+  name = Column(VARCHAR(100))
+  surname = Column(VARCHAR(100))
+  patronymic = Column(VARCHAR(100))
+  mail = Column(VARCHAR(100))
+  phone = Column(VARCHAR(11))
 
-
-class University(Base):
-   university_name = Column(VARCHAR())  
 
 
 class CompanyModel(Base):
@@ -32,24 +29,10 @@ class CompanyModel(Base):
     phone = Column(VARCHAR(20), nullable=False)
     mail = Column(VARCHAR(100), nullable=False)
     description = Column(VARCHAR(500), nullable=False)
-    is_active = Column(BOOLEAN, default=True)
-
-# class User(Base):
-#     __tablename__ = 'users'
-#     id = Column(DATE)
-#     username = Column(VARCHAR(100), nullable=False)
-#     email = Column(VARCHAR(100), nullable=False)    
-#     password = Column(VARCHAR(200), nullable=False)
-    
-#     __table_args__ = (
-#         PrimaryKeyConstraint('id', name='user_pk'),
-#         UniqueConstraint('username'),
-#         UniqueConstraint('email'),
-#     )
 
 
 @dataclass
-class workers:
+class Workers:
     def __init__(self, type: str, count: int):
         self.type = None
         self.count = 0
@@ -59,57 +42,47 @@ class Vacancy(Base):
     vacancy_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     company_id = Column(UUID(as_uuid=True), nullable=False)
     curator_id = Column(UUID(as_uuid=True), nullable=False)
-    workers = Column(ARRAY(workers()), nullable=False)
+    workers = Column(ARRAY(Workers()), nullable=False)
     status = Column(VARCHAR(100), nullable=False)
-    description = Column(VARCHAR(250))
     tasks = Column(VARCHAR(250), nullable=False)
     start_date = Column(DATE, nullable=False)
     end_date = Column(DATE, nullable=False)
     address = Column(VARCHAR(250), nullable=False)
-    is_active = Column(BOOLEAN, default=True)
+    description = Column(VARCHAR(250))
 
-    # company = relationship('Company', backref='vacancies', lazy=True)
+    company = relationship('Company', backref='vacancies', lazy=True)
 
+
+class University(Base):
+   university_name = Column(VARCHAR())  
 
 @dataclass
-class recommend:
+class Recommend:
     def __init__(self, student: UUID, comment: VARCHAR(250)):
         self.student = None
         self.comment = None
 
-class Curator(Base):
+class Curator(Human):
   curator_id = Column(UUID, primary_key=True)
-  name = Column(VARCHAR(30), nullable=False)
-  surname = Column(VARCHAR(30), nullable=False)
-  patronymic = Column(VARCHAR(30))
   university = Column(VARCHAR(100), nullable=False) # note: 'type university'
-  recommended = Column(recommend())
+  recommended = Column(Recommend())
 
 
-class Mentor(Base):
+
+class Mentor(Human):
     __tablename__ = 'mentors'
     mentor_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
-    name = Column(VARCHAR(30), nullable=False)
-    surname = Column(VARCHAR(30), nullable=False)
-    patronymic = Column(VARCHAR(30))
-    mail = Column(VARCHAR(30))
-    phone = Column(VARCHAR(30))
     curator_id = Column(UUID(as_uuid=True), ForeignKey('curators.curator_id'), nullable=False)
 
     curator = relationship('Curator', backref='mentors', lazy=True)
 
 
-class Student(Base):
+class Student(Human):
     __tablename__ = 'tudents'
     student_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
-    name = Column(VARCHAR(30), nullable=False)
-    surname = Column(VARCHAR(30), nullable=False)
-    patronymic = Column(VARCHAR(30))
-    profession = Column(VARCHAR(30), nullable=False)
-    mail = Column(VARCHAR(30))
-    phone = Column(VARCHAR(30))
-    resume = Column(VARCHAR(1000))
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
+    profession = Column(VARCHAR(30), nullable=False)
+    resume = Column(VARCHAR(1000))
 
     __table_args__ = (
         Index('student_short', 'name', 'urname', 'patronymic', 'profession', 'entor_id', unique=True),
@@ -118,9 +91,9 @@ class Student(Base):
     mentor = relationship('Mentor', backref='students', lazy=True)
 
 
-# class TaskStatus(Enum):
-#   # TODO: Task statuses
-#   ...
+class TaskStatus(Enum):
+  # TODO: Task statuses
+  ...
 
 class Task(Base):
     __tablename__ = 'tasks'
