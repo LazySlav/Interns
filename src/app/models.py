@@ -23,7 +23,7 @@ class University(Base):
    university_name = Column(VARCHAR())  
 
 
-class Company(Base):
+class CompanyModel(Base):
     __tablename__ = 'companies'
     company_id = Column(UUID , primary_key=True, index=True)
     name = Column(VARCHAR(100), nullable=False)

@@ -1,5 +1,5 @@
 """
-This file is for connecting routers and connecting to database
+This file is for connecting routers and creating DB engine
 """
 
 
