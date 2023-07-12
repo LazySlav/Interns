@@ -16,3 +16,6 @@ router = APIRouter(
 async def get_curator(id : UUID):
     return await read_entity(ASYNC_SESSIONMAKER, CuratorModel, id=id)
 
+@router.put("/edit", response_model=CuratorModel)
+async def update_mentor(payload:CuratorSchema):
+    return await update_entity(ASYNC_SESSIONMAKER, CuratorModel, payload)
