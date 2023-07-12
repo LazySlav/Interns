@@ -1,5 +1,5 @@
 from uuid import UUID
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from models import CompanyModel
 from schemas import CompanySchema
 from crud import *
@@ -14,8 +14,14 @@ router = APIRouter(
 
 @router.get("/{id}",response_model=CompanySchema)
 async def get_Company(id : UUID):
-  return await read_entity(ASYNC_SESSIONMAKER, CompanyModel, id=id)
+  try:
+    return await read_entity(ASYNC_SESSIONMAKER, CompanyModel, id=id)
+  except Exception as error:
+    raise HTTPException(status_code=404, detail=f"ID not found: {error}")
 
 @router.post("/",response_model=CompanySchema)
 async def create_Company(payload: CompanySchema):
-  return await create_entity(ASYNC_SESSIONMAKER, CompanyModel, payload)
+  try:
+    return await create_entity(ASYNC_SESSIONMAKER, CompanyModel, payload)
+  except Exception as error:
+    raise HTTPException(status_code=500, detail=f"impossible: {error}")

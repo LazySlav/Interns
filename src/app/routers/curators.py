@@ -1,6 +1,6 @@
 
 from uuid import UUID
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from models import *
 from schemas import *
 from crud import *
@@ -14,8 +14,14 @@ router = APIRouter(
 
 @router.get("/",response_model=CuratorSchema)
 async def get_curator(id : UUID):
-    return await read_entity(ASYNC_SESSIONMAKER, CuratorModel, id=id)
+    try:
+        return await read_entity(ASYNC_SESSIONMAKER, CuratorModel, id=id)
+    except Exception as error:
+        raise HTTPException(status_code=404, detail=f"ID not found: {error}")
 
 @router.put("/edit", response_model=CuratorSchema)
 async def update_mentor(payload:CuratorSchema):
-    return await update_entity(ASYNC_SESSIONMAKER, CuratorModel, payload)
+    try:
+        return await update_entity(ASYNC_SESSIONMAKER, CuratorModel, payload)
+    except Exception as error:
+        raise HTTPException(status_code=500, detail=f"impossible: {error}")
