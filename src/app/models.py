@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Index, Column, TIMESTAMP
+from sqlalchemy import ForeignKey, Index, Column, TIMESTAMP, Enum
 from sqlalchemy.dialects.postgresql import DATE, ARRAY, VARCHAR, UUID
 from sqlalchemy.orm import relationship
 from uuid import UUID
@@ -108,7 +108,11 @@ class Student(Human):
 
 
 class TaskStatus(Enum):
-  ...
+    not_checked = "not_checked"
+    checked = "checked"
+    approved = "approved"
+    rejected = "rejected"
+    completed = "completed"
 
 class Task(Base):
     __tablename__ = 'tasks'
