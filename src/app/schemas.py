@@ -16,15 +16,20 @@ from pydantic_extra_types.phone_numbers import PhoneNumber
 ##### As for models.py, inheritance should work according to https://python.helpful.codes/tutorials/pydantic/How-to-use-Pydantic-with-Inheritance/ #####
 class ID(BaseModel):
   id: UUID = Field(default_factory=uuid4)
-  
-class HumanSchema(ID):
+
+class UserSchema(ID):
+  # TODO: these should be SecretStr, not plain str
+  login: str = Field(..., max_length=30)
+  password: str = Field(..., max_length=30)
+
+class HumanSchema(BaseModel):
   name: str = Field(..., max_length=50)
   surname: str = Field(..., max_length=50)
   patronymic: str = Field(..., max_length=50)
   mail: str = Field(..., max_length=50)
   phone: PhoneNumber
 
-class CompanySchema(ID):
+class CompanySchema(UserSchema):
   name: str = Field(..., min_length=3, max_length=50)
   legal_address: str = Field(..., min_length=3, max_length=100)
   physical_address: str = Field(..., min_length=3, max_length=100)
@@ -64,16 +69,16 @@ class UniversitySchema(BaseModel):
   university_name: str = Field(..., max_length=250)
 
 
-class CuratorSchema(HumanSchema):
+class CuratorSchema(HumanSchema, UserSchema):
   university: UniversitySchema
   recommended: list[tuple[UUID,constr(max_length=50)]] = [()] # ? this probably needs to be changed to contain extra info
 
 
-class MentorSchema(HumanSchema):
+class MentorSchema(HumanSchema, UserSchema):
   curator_id: UUID
 
 
-class StudentSchema(HumanSchema):
+class StudentSchema(HumanSchema, UserSchema):
   mentor_id: UUID
   profession: str = Field(..., max_length=50)
   resume: str = Field(...,  max_length=1000)

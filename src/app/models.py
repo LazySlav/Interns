@@ -8,14 +8,17 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 
 ##### Changes should work properly, see: https://docs.sqlalchemy.org/en/20/orm/inheritance.html#relationships-with-single-table-inheritance #####
 
-class Base(AsyncAttrs, DeclarativeBase):
+class BaseModel(AsyncAttrs, DeclarativeBase):
     pass
 
-class ID(Base):
+class ID(BaseModel):
     id = Column(UUID(as_uuid=True), primary_key=True, index=True)
 
-
-class Human(ID):
+class UserModel(ID):
+    login = Column(VARCHAR(30), index=True,nullable=False)
+    password = Column(VARCHAR(30), index=True,nullable=False)
+    
+class HumanModel(BaseModel):
   name = Column(VARCHAR(100))
   surname = Column(VARCHAR(100))
   patronymic = Column(VARCHAR(100))
@@ -62,7 +65,7 @@ class VacancyModel(ID):
     company = relationship('Company', backref='vacancies', lazy=True)
 
 
-class University(Base):
+class University(BaseModel):
    university_name = Column(VARCHAR())  
 
 
@@ -79,20 +82,20 @@ class Recommend(types.TypeDecorator):
             student_id, comment = value.split(",")
             return (student_id, comment)
 
-class CuratorModel(Human):
+class CuratorModel(HumanModel):
   university = Column(VARCHAR(100), nullable=False) # note: 'type university'
   recommended = Column(Recommend())
 
 
 
-class MentorModel(Human):
+class MentorModel(HumanModel):
     __tablename__ = 'mentors'
     curator_id = Column(UUID(as_uuid=True), ForeignKey('curators.curator_id'), nullable=False)
 
     curator = relationship('Curator', backref='mentors', lazy=True)
 
 
-class StudentModel(Human):
+class StudentModel(HumanModel):
     __tablename__ = 'students'
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
     profession = Column(VARCHAR(30), nullable=False)
