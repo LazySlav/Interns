@@ -1,9 +1,12 @@
 from typing import List
-from fastapi import APIRouter, HTTPException, Path
-from sqlalchemy import Table
-from app.schemas import Company
-
+from uuid import UUID
+from fastapi import APIRouter
+from app.models import CompanyModel
+from app.schemas import CompanySchema
+from app.crud import *
+from app.main import ASYNC_SESSIONMAKER
 router = APIRouter()
 
-# @router.get("/",response_model=List[Company], status_code=201)
-# async def read_notes():
+@router.get("/{id}",response_model=CompanySchema)
+async def get_company(id : UUID):
+  return await read_entity(ASYNC_SESSIONMAKER, CompanyModel, id=id)
