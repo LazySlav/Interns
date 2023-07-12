@@ -5,7 +5,8 @@ from typing import List
 from fastapi import APIRouter
 from app.models import Base as BaseModel
 router = APIRouter()
-
+##### SELECT: https://docs.sqlalchemy.org/en/20/orm/queryguide/select.html or https://docs.sqlalchemy.org/en/20/orm/queryguide/inheritance.html #####
+##### INSERT, UPDATE, DELETE: https://docs.sqlalchemy.org/en/20/orm/queryguide/dml.html #####
 
 async def read_all_entities(async_session: async_sessionmaker[AsyncSession], model_type: BaseModel):
     async with async_session() as session:
