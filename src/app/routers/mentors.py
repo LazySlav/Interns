@@ -1,7 +1,7 @@
 
 from fastapi import APIRouter
 from app.main import ASYNC_SESSIONMAKER
-from Interns.src.app.models import *
+from app.models import *
 from app.schemas import *
 from crud import *
 from uuid import UUID
