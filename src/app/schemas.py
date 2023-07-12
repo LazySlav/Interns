@@ -5,10 +5,10 @@ This file is for pydanctic models (schemas) - validation, type-checking and data
 
 from datetime import datetime
 from enum import Enum
-from typing import Literal
 from uuid import UUID, uuid4
 # from email_validator import validate_email
-from pydantic import BaseModel, Field, constr, field_validator, FutureDatetime
+# from pydantic import field_validator
+from pydantic import BaseModel, Field, constr, FutureDatetime
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
 class User(BaseModel):
