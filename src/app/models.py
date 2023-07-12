@@ -1,16 +1,16 @@
-from sqlalchemy import ForeignKey, Table, Index, Column, \
-                       DateTime, TIMESTAMP
-from sqlalchemy.dialects.postgresql import TEXT, DATE, \
-                       BOOLEAN, ARRAY, VARCHAR, UUID
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import ForeignKey, Index, Column, TIMESTAMP
+from sqlalchemy.dialects.postgresql import DATE, ARRAY, VARCHAR, UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime
-from uuid import UUID, uuid4
-from dataclasses import dataclass
+from uuid import UUID
 from sqlalchemy import types
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
-Base = declarative_base()
+class Base(AsyncAttrs, DeclarativeBase):
+    pass
 
+class User(Base):
+    ...
 
 class Human(Base):
   name = Column(VARCHAR(100))
@@ -94,14 +94,14 @@ class Mentor(Human):
 
 
 class Student(Human):
-    __tablename__ = 'tudents'
+    __tablename__ = 'students'
     student_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
     profession = Column(VARCHAR(30), nullable=False)
     resume = Column(VARCHAR(1000))
 
     __table_args__ = (
-        Index('student_short', 'name', 'urname', 'patronymic', 'profession', 'entor_id', unique=True),
+        Index('student_short', 'name', 'surname', 'patronymic', 'profession', 'mentor_id', unique=True),
     )
 
     mentor = relationship('Mentor', backref='students', lazy=True)
@@ -133,7 +133,7 @@ class Chat(Base):
 
 
 class Messages(Base):
-    __tablename__ = 'essages'
+    __tablename__ = 'messages'
     message_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     chat_id = Column(UUID(as_uuid=True), ForeignKey('chats.chat_id'), nullable=False)
     body = Column(VARCHAR(1000), nullable=False)

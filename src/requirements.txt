@@ -18,3 +18,8 @@ phonenumbers
 
 #SQLAlchemy
 SQLAlchemy
+
+#security
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]

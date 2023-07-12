@@ -5,12 +5,15 @@ This file is for pydanctic models (schemas) - validation, type-checking and data
 
 from datetime import datetime
 from enum import Enum
+from typing import Literal
 from uuid import UUID, uuid4
 # from email_validator import validate_email
-from pydantic import BaseModel, Field, field_validator, FutureDatetime
+from pydantic import BaseModel, Field, constr, field_validator, FutureDatetime
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
-
+class User(BaseModel):
+  ...
+  
 class HumanSchema(BaseModel):
   name: str = Field(..., max_length=50)
   surname: str = Field(..., max_length=50)
@@ -34,7 +37,7 @@ class CompanySchema(BaseModel):
   #     except ...
 
 # ? is this the right/safe way to make status options limited
-class VacancyStatus(Enum):
+class VacancyStatus(str, Enum):
   not_checked = "not_checked"
   checked = "checked"
   approved = "approved"
@@ -47,7 +50,7 @@ class VacancySchema(BaseModel):
   # ? should there be checks as well or class's are enough
   company_id: UUID
   curator_id: UUID
-  workers: list[tuple[int,str]] = [()]  # TODO: max_length
+  workers: list[tuple[int,constr(max_length=100)]] = [()] 
   status: VacancyStatus
   tasks: str = Field(..., max_length=1000) # TODO: rich text/markdown
   start_date: FutureDatetime # ! might cause trouble
@@ -63,7 +66,7 @@ class UniversitySchema(BaseModel):
 class CuratorSchema(HumanSchema):
   curator_id: UUID = Field(default_factory=uuid4)
   university: UniversitySchema
-  recommended: list[tuple[UUID,str]] = [()] # TODO: max_length
+  recommended: list[tuple[UUID,constr(max_length=50)]] = [()] # ? this probably needs to be changed to contain extra info
 
 
 class MentorSchema(HumanSchema):
@@ -79,8 +82,11 @@ class StudentSchema(HumanSchema):
 
 
 class TaskStatus(Enum):
-  # TODO: Task statuses
-  ...
+  not_checked = "not_checked"
+  checked = "checked"
+  approved = "approved"
+  rejected = "rejected"
+  completed = "completed"
 
 class TaskSchema(BaseModel):
   task_id: UUID = Field(default_factory=uuid4)

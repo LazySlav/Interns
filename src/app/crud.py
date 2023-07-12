@@ -24,10 +24,10 @@ async def read_all_entities(async_session: async_sessionmaker[AsyncSession], mod
             return await session.scalars(statement).all()
 
 # @router.get("/{id}",status_code=201)
-async def read_entity(async_session: async_sessionmaker[AsyncSession], id: UUID, model_type):
+async def read_entity(async_session: async_sessionmaker[AsyncSession], model_type, **kwargs):
     async with async_session() as session:
         async with session.begin():
-            statement = select(model_type).filter_by(id=id)
+            statement = select(model_type).filter_by(**kwargs)
             return await session.scalars(statement).all()
         
 # async def read_entity_list(async_session: async_sessionmaker[AsyncSession], id_list: List[UUID], model_type):
