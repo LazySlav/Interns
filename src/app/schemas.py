@@ -11,18 +11,20 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, Field, constr, FutureDatetime
 from pydantic_extra_types.phone_numbers import PhoneNumber
 
-class User(BaseModel):
-  ...
+
+
+##### As for models.py, inheritance should work according to https://python.helpful.codes/tutorials/pydantic/How-to-use-Pydantic-with-Inheritance/ #####
+class ID(BaseModel):
+  id: UUID = Field(default_factory=uuid4)
   
-class HumanSchema(BaseModel):
+class HumanSchema(ID):
   name: str = Field(..., max_length=50)
   surname: str = Field(..., max_length=50)
   patronymic: str = Field(..., max_length=50)
   mail: str = Field(..., max_length=50)
   phone: PhoneNumber
 
-class CompanySchema(BaseModel):
-  company_id: UUID = Field(default_factory=uuid4)
+class CompanySchema(ID):
   name: str = Field(..., min_length=3, max_length=50)
   legal_address: str = Field(..., min_length=3, max_length=100)
   physical_address: str = Field(..., min_length=3, max_length=100)
@@ -45,8 +47,7 @@ class VacancyStatus(str, Enum):
   completed = "completed"
    
 
-class VacancySchema(BaseModel):
-  vacancy_id: UUID = Field(default_factory=uuid4)
+class VacancySchema(ID):
   # ? should there be checks as well or class's are enough
   company_id: UUID
   curator_id: UUID
@@ -64,18 +65,15 @@ class UniversitySchema(BaseModel):
 
 
 class CuratorSchema(HumanSchema):
-  curator_id: UUID = Field(default_factory=uuid4)
   university: UniversitySchema
   recommended: list[tuple[UUID,constr(max_length=50)]] = [()] # ? this probably needs to be changed to contain extra info
 
 
 class MentorSchema(HumanSchema):
-  mentor_id: UUID = Field(default_factory=uuid4)
   curator_id: UUID
 
 
 class StudentSchema(HumanSchema):
-  student_id: UUID = Field(default_factory=uuid4)
   mentor_id: UUID
   profession: str = Field(..., max_length=50)
   resume: str = Field(...,  max_length=1000)
@@ -88,22 +86,19 @@ class TaskStatus(Enum):
   rejected = "rejected"
   completed = "completed"
 
-class TaskSchema(BaseModel):
-  task_id: UUID = Field(default_factory=uuid4)
+class TaskSchema(ID):
   mentor_id: UUID
   student_id: UUID
   description: str = Field(..., max_length=1000)
   status: TaskStatus
 
 
-class ChatSchema(BaseModel):
-  chat_id: UUID = Field(default_factory=uuid4)
+class ChatSchema(ID):
   company_id: UUID
   student_id: UUID
 
 
-class MessageSchema(BaseModel):
-  message_id: UUID = Field(default_factory=uuid4)
+class MessageSchema(ID):
   chat_id: UUID
   body: str = Field(..., max_length=1000)
   datetime: datetime # ? additional checks needed or what
