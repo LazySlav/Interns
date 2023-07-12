@@ -1,25 +1,30 @@
 from fastapi import APIRouter
-from Interns.src.app.models import Student
+from app.main import ASYNC_SESSIONMAKER
+from Interns.src.app.models import *
+from app.schemas import *
 from crud import *
-from  import 
+from uuid import UUID
+
 
 router = APIRouter(
     prefix="/students",
     tags=['student']
 )
 
-@router.get("/", response_model=List[Student])
+@router.get("/", response_model=List[StudentModel])
 async def get_students():
-   return read_all_entities()
+   return await read_all_entities(ASYNC_SESSIONMAKER, StudentModel)
 
-@router.get("/{student_id}", response_model=Student)
-async def get_student():
-    return read_entity()
+@router.get("/{id}", response_model=StudentModel)
+async def get_student(id : UUID):
+    return await read_entity(ASYNC_SESSIONMAKER, StudentModel, id=id)
 
-@router.post("/")
-async def create_student(student_data: dict):
-    return create_entity()
 
-@router.put("/{student_id}")
-async def update_student(student_id: str, student_data: dict):
-    return update_entity()
+@router.post("/create", response_model=StudentModel)
+async def create_student(payload:StudentSchema):
+    return await create_entity(ASYNC_SESSIONMAKER, StudentModel, payload)
+
+
+@router.put("/{id}/edit", response_model=StudentModel)
+async def update_student(payload:StudentSchema):
+    return await update_entity(ASYNC_SESSIONMAKER, StudentModel, payload)

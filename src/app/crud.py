@@ -1,7 +1,6 @@
 from pydantic import BaseModel as BaseSchema
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 from sqlalchemy import select, update, delete
-from sqlalchemy import select, update, delete
 from typing import List
 from fastapi import APIRouter
 from app.models import Base as BaseModel

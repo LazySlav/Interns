@@ -1,21 +1,31 @@
+
 from fastapi import APIRouter
+from app.main import ASYNC_SESSIONMAKER
+from Interns.src.app.models import *
+from app.schemas import *
+from crud import *
+from uuid import UUID
 
-router = APIRouter()
 
-@router.get("/")
-async def get_mentors():
-    pass
+router = APIRouter(
+    prefix="/mentors",
+    tags=['mentor']
+)
 
-@router.get("/{mentor_id}")
-async def get_mentor(mentor_id: str):
-    pass
 
-@router.post("/")
-async def create_mentor(mentor_data: dict):
+@router.get("/{id}", response_model=MentorModel)
+async def get_mentor(id : UUID):
+    return await read_entity(ASYNC_SESSIONMAKER, StudentModel, id=id)
 
-    pass
 
-@router.put("/{mentor_id}")
-async def update_mentor(mentor_id: str, mentor_data: dict):
 
-    pass
+@router.post("/create",response_model=MentorModel)
+async def create_mentor(payload:MentorSchema):
+    return await create_entity(ASYNC_SESSIONMAKER, MentorModel, payload)
+    
+
+@router.put("/{id}/edit", response_model=MentorModel)
+async def update_mentor(payload:MentorSchema):
+    return await update_entity(ASYNC_SESSIONMAKER, MentorModel, payload)
+
+
