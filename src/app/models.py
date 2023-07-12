@@ -1,18 +1,21 @@
 from sqlalchemy import ForeignKey, Index, Column, TIMESTAMP, Enum
 from sqlalchemy.dialects.postgresql import DATE, ARRAY, VARCHAR, UUID
 from sqlalchemy.orm import relationship
-from uuid import UUID
+from sqlalchemy import UUID
 from sqlalchemy import types
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
+##### Changes should work properly, see: https://docs.sqlalchemy.org/en/20/orm/inheritance.html#relationships-with-single-table-inheritance #####
+
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
-class User(Base):
-    ...
+class ID(Base):
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
 
-class Human(Base):
+
+class Human(ID):
   name = Column(VARCHAR(100))
   surname = Column(VARCHAR(100))
   patronymic = Column(VARCHAR(100))
@@ -21,9 +24,8 @@ class Human(Base):
 
 
 
-class CompanyModel(Base):
+class CompanyModel(ID):
     __tablename__ = 'companies'
-    company_id = Column(UUID , primary_key=True, index=True)
     name = Column(VARCHAR(100), nullable=False)
     legal_address = Column(VARCHAR(200), nullable=False)
     physical_address = Column(VARCHAR(200), nullable=False)
@@ -45,9 +47,8 @@ class Workers(types.TypeDecorator):
             profession, count = value.split(",")
             return (profession, int(count))
 
-class Vacancy(Base):
+class VacancyModel(ID):
     __tablename__ = 'vacancies'
-    vacancy_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     company_id = Column(UUID(as_uuid=True), nullable=False)
     curator_id = Column(UUID(as_uuid=True), nullable=False)
     workers = Column(ARRAY(Workers()), nullable=False)
@@ -78,24 +79,21 @@ class Recommend(types.TypeDecorator):
             student_id, comment = value.split(",")
             return (student_id, comment)
 
-class Curator(Human):
-  curator_id = Column(UUID, primary_key=True)
+class CuratorModel(Human):
   university = Column(VARCHAR(100), nullable=False) # note: 'type university'
   recommended = Column(Recommend())
 
 
 
-class Mentor(Human):
+class MentorModel(Human):
     __tablename__ = 'mentors'
-    mentor_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     curator_id = Column(UUID(as_uuid=True), ForeignKey('curators.curator_id'), nullable=False)
 
     curator = relationship('Curator', backref='mentors', lazy=True)
 
 
-class Student(Human):
+class StudentModel(Human):
     __tablename__ = 'students'
-    student_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
     profession = Column(VARCHAR(30), nullable=False)
     resume = Column(VARCHAR(1000))
@@ -114,9 +112,8 @@ class TaskStatus(Enum):
     rejected = "rejected"
     completed = "completed"
 
-class Task(Base):
+class TaskModel(ID):
     __tablename__ = 'tasks'
-    task_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
     student_id = Column(UUID(as_uuid=True), ForeignKey('students.student_id'), nullable=False)
     description = Column(VARCHAR(1000), nullable=False)
@@ -126,9 +123,8 @@ class Task(Base):
     student = relationship('Student', backref='tasks', lazy=True)
 
 
-class Chat(Base):
+class ChatModel(ID):
     __tablename__ = 'chats'
-    chat_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     company_id = Column(UUID(as_uuid=True), ForeignKey('companies.company_id'), nullable=False)
     student_id = Column(UUID(as_uuid=True), ForeignKey('students.student_id'), nullable=False)
 
@@ -136,9 +132,8 @@ class Chat(Base):
     student = relationship('Student', backref='chats', lazy=True)
 
 
-class Messages(Base):
+class MessageModel(ID):
     __tablename__ = 'messages'
-    message_id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     chat_id = Column(UUID(as_uuid=True), ForeignKey('chats.chat_id'), nullable=False)
     body = Column(VARCHAR(1000), nullable=False)
     date_time = Column(TIMESTAMP(timezone=True), nullable=False)
