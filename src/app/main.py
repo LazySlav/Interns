@@ -5,11 +5,12 @@ This file is for connecting routers and creating DB engine
 
 from fastapi import FastAPI
 import os
-from app.models import Base
+
+import uvicorn
 from sqlalchemy.ext.asyncio import async_sessionmaker,create_async_engine
 from fastapi import FastAPI
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
-from app.routers import companies,curators,mentors,students,users
+from models import BaseModel
  
 app = FastAPI()
 app.add_middleware(
@@ -26,17 +27,13 @@ app.add_middleware(
         },
     },
 )
-app.include_router(companies.router)
-app.include_router(curators.router)
-app.include_router(mentors.router)
-app.include_router(students.router)
-app.include_router(users.router)
+
 
 ##### TODO: migrate all of sqlalchemy initial start stuff into separate file #####
 DATABASE_URL = os.getenv("DATABASE_URL")
 ENGINE = create_async_engine(DATABASE_URL)
-with ENGINE.begin() as conn:
-    conn.run_sync(Base.metadata.create_all)
+# conn = ENGINE.begin()
+# conn.run_sync(BaseModel.metadata.create_all)
 
 # ? the fuck is this
 # for AsyncEngine created in function scope, close and
@@ -44,5 +41,12 @@ with ENGINE.begin() as conn:
 # await ENGINE.dispose()
 #     
 ASYNC_SESSIONMAKER = async_sessionmaker(ENGINE, expire_on_commit=False) # expire_on_commit - don't expire objects after transaction commit
-
+from routers import companies,curators,mentors,students,users
+app.include_router(companies.router)
+app.include_router(curators.router)
+app.include_router(mentors.router)
+app.include_router(students.router)
+app.include_router(users.router)
 ##############################################################################
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000) 

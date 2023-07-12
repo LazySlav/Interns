@@ -11,14 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 class BaseModel(AsyncAttrs, DeclarativeBase):
     pass
 
-class ID(BaseModel):
+class ID():
     id = Column(UUID(as_uuid=True), primary_key=True, index=True)
 
-class UserModel(ID):
+class UserModel(ID,BaseModel):
+    __tablename__ = "users"
     login = Column(VARCHAR(30), index=True,nullable=False)
     password = Column(VARCHAR(30), index=True,nullable=False)
     
-class HumanModel(BaseModel):
+class HumanModel(ID):
   name = Column(VARCHAR(100))
   surname = Column(VARCHAR(100))
   patronymic = Column(VARCHAR(100))
@@ -27,7 +28,7 @@ class HumanModel(BaseModel):
 
 
 
-class CompanyModel(ID):
+class CompanyModel(ID,BaseModel):
     __tablename__ = 'companies'
     name = Column(VARCHAR(100), nullable=False)
     legal_address = Column(VARCHAR(200), nullable=False)
@@ -50,7 +51,7 @@ class Workers(types.TypeDecorator):
             profession, count = value.split(",")
             return (profession, int(count))
 
-class VacancyModel(ID):
+class VacancyModel(ID,BaseModel):
     __tablename__ = 'vacancies'
     company_id = Column(UUID(as_uuid=True), nullable=False)
     curator_id = Column(UUID(as_uuid=True), nullable=False)
@@ -66,7 +67,8 @@ class VacancyModel(ID):
 
 
 class University(BaseModel):
-   university_name = Column(VARCHAR())  
+   __tablename__ = "universities"
+   university_name = Column(VARCHAR(),primary_key=True)  
 
 
 class Recommend(types.TypeDecorator):
@@ -82,20 +84,21 @@ class Recommend(types.TypeDecorator):
             student_id, comment = value.split(",")
             return (student_id, comment)
 
-class CuratorModel(HumanModel):
+class CuratorModel(HumanModel,BaseModel):
+  __tablename__="curators"
   university = Column(VARCHAR(100), nullable=False) # note: 'type university'
   recommended = Column(Recommend())
 
 
 
-class MentorModel(HumanModel):
+class MentorModel(HumanModel,BaseModel):
     __tablename__ = 'mentors'
     curator_id = Column(UUID(as_uuid=True), ForeignKey('curators.curator_id'), nullable=False)
 
     curator = relationship('Curator', backref='mentors', lazy=True)
 
 
-class StudentModel(HumanModel):
+class StudentModel(HumanModel,BaseModel):
     __tablename__ = 'students'
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
     profession = Column(VARCHAR(30), nullable=False)
@@ -115,7 +118,7 @@ class TaskStatus(Enum):
     rejected = "rejected"
     completed = "completed"
 
-class TaskModel(ID):
+class TaskModel(ID,BaseModel):
     __tablename__ = 'tasks'
     mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
     student_id = Column(UUID(as_uuid=True), ForeignKey('students.student_id'), nullable=False)
@@ -126,7 +129,7 @@ class TaskModel(ID):
     student = relationship('Student', backref='tasks', lazy=True)
 
 
-class ChatModel(ID):
+class ChatModel(ID,BaseModel):
     __tablename__ = 'chats'
     company_id = Column(UUID(as_uuid=True), ForeignKey('companies.company_id'), nullable=False)
     student_id = Column(UUID(as_uuid=True), ForeignKey('students.student_id'), nullable=False)
@@ -135,7 +138,7 @@ class ChatModel(ID):
     student = relationship('Student', backref='chats', lazy=True)
 
 
-class MessageModel(ID):
+class MessageModel(ID,BaseModel):
     __tablename__ = 'messages'
     chat_id = Column(UUID(as_uuid=True), ForeignKey('chats.chat_id'), nullable=False)
     body = Column(VARCHAR(1000), nullable=False)

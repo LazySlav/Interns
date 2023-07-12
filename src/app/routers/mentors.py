@@ -1,8 +1,8 @@
 
 from fastapi import APIRouter
-from app.main import ASYNC_SESSIONMAKER
-from app.models import *
-from app.schemas import *
+from main import ASYNC_SESSIONMAKER
+from models import *
+from schemas import *
 from crud import *
 from uuid import UUID
 
@@ -13,18 +13,18 @@ router = APIRouter(
 )
 
 
-@router.get("/{id}", response_model=MentorModel)
+@router.get("/{id}", response_model=MentorSchema)
 async def get_mentor(id : UUID):
     return await read_entity(ASYNC_SESSIONMAKER, StudentModel, id=id)
 
 
 
-@router.post("/create",response_model=MentorModel)
+@router.post("/create",response_model=MentorSchema)
 async def create_mentor(payload:MentorSchema):
     return await create_entity(ASYNC_SESSIONMAKER, MentorModel, payload)
     
 
-@router.put("/{id}/edit", response_model=MentorModel)
+@router.put("/{id}/edit", response_model=MentorSchema)
 async def update_mentor(payload:MentorSchema):
     return await update_entity(ASYNC_SESSIONMAKER, MentorModel, payload)
 
