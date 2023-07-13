@@ -17,11 +17,13 @@ async def get_Company(id : UUID):
   try:
     return await read_entity(ASYNC_SESSIONMAKER, CompanyModel, id=id)
   except Exception as error:
-    raise HTTPException(status_code=404) from error
+    # raise HTTPException(status_code=404) from error
+    raise
 
 @router.post("/",response_model=CompanySchema)
 async def post_Company(payload: CompanySchema):
   try:
     return await create_entity(ASYNC_SESSIONMAKER, CompanyModel, payload)
   except Exception as error:
-    raise HTTPException(status_code=500) from error
+    # raise HTTPException(status_code=500) from error
+    raise 
