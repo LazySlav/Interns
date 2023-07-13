@@ -53,7 +53,7 @@ class Workers(types.TypeDecorator):
 
 class VacancyModel(ID,BaseModel):
     __tablename__ = 'vacancies'
-    company_id = Column(UUID(as_uuid=True), nullable=False)
+    company_id = Column(UUID(as_uuid=True), ForeignKey(CompanyModel.id, ondelete='CASCADE') nullable=False)
     curator_id = Column(UUID(as_uuid=True), nullable=False)
     workers = Column(ARRAY(Workers()), nullable=False)
     status = Column(VARCHAR(100), nullable=False)
@@ -63,7 +63,7 @@ class VacancyModel(ID,BaseModel):
     address = Column(VARCHAR(250), nullable=False)
     description = Column(VARCHAR(250))
 
-    company = relationship('Company', backref='vacancies', lazy=True)
+    company = relationship(CompanyModel, backref='vacancies', lazy=True)
 
 
 class University(BaseModel):
@@ -88,19 +88,20 @@ class CuratorModel(HumanModel,BaseModel):
   __tablename__="curators"
   university = Column(VARCHAR(100), nullable=False) # note: 'type university'
   recommended = Column(Recommend())
-
+  
+  university = relationship(University, back_populates='curators', lazy=True)
 
 
 class MentorModel(HumanModel,BaseModel):
     __tablename__ = 'mentors'
-    curator_id = Column(UUID(as_uuid=True), ForeignKey('curators.curator_id'), nullable=False)
+    curator_id = Column(UUID(as_uuid=True), ForeignKey(CuratorModel.id, ondelete='CASCADE'), nullable=False)
 
-    curator = relationship('Curator', backref='mentors', lazy=True)
+    curator = relationship(CuratorModel, backref='mentors', lazy=True)
 
 
 class StudentModel(HumanModel,BaseModel):
     __tablename__ = 'students'
-    mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
+    mentor_id = Column(UUID(as_uuid=True), ForeignKey(MentorModel.id, ondelete='CASCADE'), nullable=False)
     profession = Column(VARCHAR(30), nullable=False)
     resume = Column(VARCHAR(1000))
 
@@ -108,7 +109,7 @@ class StudentModel(HumanModel,BaseModel):
         Index('student_short', 'name', 'surname', 'patronymic', 'profession', 'mentor_id', unique=True),
     )
 
-    mentor = relationship('Mentor', backref='students', lazy=True)
+    mentor = relationship(MentorModel, backref='students', lazy=True)
 
 
 class TaskStatus(Enum):
@@ -120,28 +121,28 @@ class TaskStatus(Enum):
 
 class TaskModel(ID,BaseModel):
     __tablename__ = 'tasks'
-    mentor_id = Column(UUID(as_uuid=True), ForeignKey('mentors.mentor_id'), nullable=False)
-    student_id = Column(UUID(as_uuid=True), ForeignKey('students.student_id'), nullable=False)
+    mentor_id = Column(UUID(as_uuid=True), ForeignKey(MentorModel.id, ondelete='CASCADE'), nullable=False)
+    student_id = Column(UUID(as_uuid=True), ForeignKey(StudentModel.id, ondelete='CASCADE'), nullable=False)
     description = Column(VARCHAR(1000), nullable=False)
     status = Column(TaskStatus(), nullable=False)
 
-    mentor = relationship('Mentor', backref='tasks', lazy=True)
-    student = relationship('Student', backref='tasks', lazy=True)
+    mentor = relationship(MentorModel, backref='tasks', lazy=True)
+    student = relationship(StudentModel, backref='tasks', lazy=True)
 
 
 class ChatModel(ID,BaseModel):
     __tablename__ = 'chats'
-    company_id = Column(UUID(as_uuid=True), ForeignKey('companies.company_id'), nullable=False)
-    student_id = Column(UUID(as_uuid=True), ForeignKey('students.student_id'), nullable=False)
+    company_id = Column(UUID(as_uuid=True), ForeignKey(CompanyModel.id, ondelete='CASCADE'), nullable=False)
+    student_id = Column(UUID(as_uuid=True), ForeignKey(StudentModel.id, ondelete='CASCADE'), nullable=False)
 
-    company = relationship('Company', backref='chats', lazy=True)
-    student = relationship('Student', backref='chats', lazy=True)
+    company = relationship(CompanyModel, backref='chats', lazy=True)
+    student = relationship(StudentModel, backref='chats', lazy=True)
 
 
 class MessageModel(ID,BaseModel):
     __tablename__ = 'messages'
-    chat_id = Column(UUID(as_uuid=True), ForeignKey('chats.chat_id'), nullable=False)
+    chat_id = Column(UUID(as_uuid=True), ForeignKey(ChatModel.id, ondelete='CASCADE'), nullable=False)
     body = Column(VARCHAR(1000), nullable=False)
     date_time = Column(TIMESTAMP(timezone=True), nullable=False)
 
-    chat = relationship('Chat', backref='messages', lazy=True)
+    chat = relationship(ChatModel, backref='messages', lazy=True)
