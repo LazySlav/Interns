@@ -4,11 +4,11 @@ services:
   web:
     build: ./src
     command: |
-      bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; python main.py'
+      bash -c 'while !</dev/tcp/db/5432; do sleep 1; done; python app/main.py'
     volumes:
       - ./src/:/usr/src/app/
     ports:
-      - 8002:8000
+      - 8000:8000
     environment:
         # ? is this even safe
       - DATABASE_URL=postgresql+asyncpg://root:k4Q46wUg76@db/interns

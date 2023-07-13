@@ -11,7 +11,7 @@ router = APIRouter()
 async def read_all_entities(async_session: async_sessionmaker[AsyncSession], model_type: BaseModel):
     async with async_session() as session:
         async with session.begin():
-            statement = select(model_type).all()
+            statement = select(model_type)
             return await session.scalars(statement)
 
 async def read_entity(async_session: async_sessionmaker[AsyncSession], model_type: BaseModel, **kwargs):

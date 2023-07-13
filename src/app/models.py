@@ -14,12 +14,13 @@ class BaseModel(AsyncAttrs, DeclarativeBase):
 class ID():
     id = Column(UUID(as_uuid=True), primary_key=True, index=True)
 
-class UserModel(ID,BaseModel):
+class UserModel():
     __tablename__ = "users"
+    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
     login = Column(VARCHAR(30), index=True,nullable=False)
     password = Column(VARCHAR(30), index=True,nullable=False)
     
-class HumanModel(ID):
+class HumanModel():
   name = Column(VARCHAR(100))
   surname = Column(VARCHAR(100))
   patronymic = Column(VARCHAR(100))
@@ -28,7 +29,7 @@ class HumanModel(ID):
 
 
 
-class CompanyModel(ID,BaseModel):
+class CompanyModel(BaseModel, UserModel):
     __tablename__ = 'companies'
     name = Column(VARCHAR(100), nullable=False)
     legal_address = Column(VARCHAR(200), nullable=False)
@@ -51,7 +52,7 @@ class Workers(types.TypeDecorator):
             profession, count = value.split(",")
             return (profession, int(count))
 
-class VacancyModel(ID,BaseModel):
+class VacancyModel(BaseModel, ID):
     __tablename__ = 'vacancies'
     company_id = Column(UUID(as_uuid=True), ForeignKey(CompanyModel.id, ondelete='CASCADE'), nullable=False)
     curator_id = Column(UUID(as_uuid=True), nullable=False)
@@ -63,7 +64,7 @@ class VacancyModel(ID,BaseModel):
     address = Column(VARCHAR(250), nullable=False)
     description = Column(VARCHAR(250))
 
-    company = relationship(CompanyModel, backref='vacancies', lazy=True)
+    company = relationship("CompanyModel", backref='vacancies', lazy=True)
 
 
 class University(BaseModel):
@@ -84,32 +85,34 @@ class Recommend(types.TypeDecorator):
             student_id, comment = value.split(",")
             return (student_id, comment)
 
-class CuratorModel(HumanModel,BaseModel):
+class CuratorModel(BaseModel, UserModel):
   __tablename__="curators"
-  university = Column(VARCHAR(100), nullable=False) # note: 'type university'
+  university = Column(VARCHAR(100), ForeignKey(University.university_name, ondelete='CASCADE'), nullable=False) # note: 'type university'
   recommended = Column(Recommend())
   
-  university = relationship(University, back_populates='curators', lazy=True)
+  university_relationship = relationship("University", backref='curators', lazy=True)
 
 
-class MentorModel(HumanModel,BaseModel):
+class MentorModel(BaseModel, UserModel):
     __tablename__ = 'mentors'
     curator_id = Column(UUID(as_uuid=True), ForeignKey(CuratorModel.id, ondelete='CASCADE'), nullable=False)
 
-    curator = relationship(CuratorModel, backref='mentors', lazy=True)
+    curator = relationship("CuratorModel", backref='mentors', lazy=True)
 
 
-class StudentModel(HumanModel,BaseModel):
+class StudentModel(BaseModel, UserModel):
     __tablename__ = 'students'
     mentor_id = Column(UUID(as_uuid=True), ForeignKey(MentorModel.id, ondelete='CASCADE'), nullable=False)
     profession = Column(VARCHAR(30), nullable=False)
     resume = Column(VARCHAR(1000))
-
+    active_vacancy = Column(VacancyModel,ForeignKey("VacancyModel.id",ondelete="CASCADE"),nullable=True)
+    vacancy_history=Column(ARRAY(VacancyModel),nullable=True)
     __table_args__ = (
         Index('student_short', 'name', 'surname', 'patronymic', 'profession', 'mentor_id', unique=True),
     )
 
-    mentor = relationship(MentorModel, backref='students', lazy=True)
+    vacancy = relationship("VacancyModel",backref='vacancies',lazy=True)
+    mentor = relationship("MentorModel", backref='students', lazy=True)
 
 
 class TaskStatus(Enum):
@@ -119,30 +122,30 @@ class TaskStatus(Enum):
     rejected = "rejected"
     completed = "completed"
 
-class TaskModel(ID,BaseModel):
+class TaskModel(BaseModel, ID):
     __tablename__ = 'tasks'
     mentor_id = Column(UUID(as_uuid=True), ForeignKey(MentorModel.id, ondelete='CASCADE'), nullable=False)
     student_id = Column(UUID(as_uuid=True), ForeignKey(StudentModel.id, ondelete='CASCADE'), nullable=False)
     description = Column(VARCHAR(1000), nullable=False)
     status = Column(TaskStatus(), nullable=False)
 
-    mentor = relationship(MentorModel, backref='tasks', lazy=True)
-    student = relationship(StudentModel, backref='tasks', lazy=True)
+    mentor = relationship("MentorModel", backref='tasks', lazy=True)
+    student = relationship("StudentModel", backref='tasks', lazy=True)
 
 
-class ChatModel(ID,BaseModel):
+class ChatModel(BaseModel, ID):
     __tablename__ = 'chats'
     company_id = Column(UUID(as_uuid=True), ForeignKey(CompanyModel.id, ondelete='CASCADE'), nullable=False)
     student_id = Column(UUID(as_uuid=True), ForeignKey(StudentModel.id, ondelete='CASCADE'), nullable=False)
 
-    company = relationship(CompanyModel, backref='chats', lazy=True)
-    student = relationship(StudentModel, backref='chats', lazy=True)
+    company = relationship("CompanyModel", backref='chats', lazy=True)
+    student = relationship("StudentModel", backref='chats', lazy=True)
 
 
-class MessageModel(ID,BaseModel):
+class MessageModel(BaseModel, ID):
     __tablename__ = 'messages'
     chat_id = Column(UUID(as_uuid=True), ForeignKey(ChatModel.id, ondelete='CASCADE'), nullable=False)
     body = Column(VARCHAR(1000), nullable=False)
     date_time = Column(TIMESTAMP(timezone=True), nullable=False)
 
-    chat = relationship(ChatModel, backref='messages', lazy=True)
+    chat = relationship("ChatModel", backref='messages', lazy=True)
