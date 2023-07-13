@@ -53,7 +53,7 @@ class Workers(types.TypeDecorator):
 
 class VacancyModel(ID,BaseModel):
     __tablename__ = 'vacancies'
-    company_id = Column(UUID(as_uuid=True), ForeignKey(CompanyModel.id, ondelete='CASCADE') nullable=False)
+    company_id = Column(UUID(as_uuid=True), ForeignKey(CompanyModel.id, ondelete='CASCADE'), nullable=False)
     curator_id = Column(UUID(as_uuid=True), nullable=False)
     workers = Column(ARRAY(Workers()), nullable=False)
     status = Column(VARCHAR(100), nullable=False)
