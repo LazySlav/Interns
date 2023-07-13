@@ -18,23 +18,23 @@ async def get_mentor(id : UUID):
     try:
         return await read_entity(ASYNC_SESSIONMAKER, StudentModel, id=id)
     except Exception as error:
-        raise HTTPException(status_code=404, detail=f"ID not found: {error}")
+        raise HTTPException(status_code=404) from error
 
 
 
 @router.post("/create",response_model=MentorSchema)
-async def create_mentor(payload:MentorSchema):
+async def post_mentor(payload:MentorSchema):
     try:
         return await create_entity(ASYNC_SESSIONMAKER, MentorModel, payload)
     except Exception as error:
-        raise HTTPException(status_code=500, detail=f"impossible: {error}")
+        raise HTTPException(status_code=500) from error
     
 
 @router.put("/{id}/edit", response_model=MentorSchema)
-async def update_mentor(payload:MentorSchema):
+async def put_mentor(payload:MentorSchema):
     try:
         return await update_entity(ASYNC_SESSIONMAKER, MentorModel, payload)
     except Exception as error:
-        raise HTTPException(status_code=500, detail=f"impossible: {error}")
+        raise HTTPException(status_code=500) from error
 
 

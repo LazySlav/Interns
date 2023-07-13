@@ -16,8 +16,7 @@ class ID():
 
 class UserModel():
     __tablename__ = "users"
-    id = Column(UUID(as_uuid=True), primary_key=True, index=True)
-    login = Column(VARCHAR(30), index=True,nullable=False)
+    login = Column(VARCHAR(30), primary_key=True, index=True,nullable=False)
     password = Column(VARCHAR(30), index=True,nullable=False)
     
 class HumanModel():
@@ -29,8 +28,9 @@ class HumanModel():
 
 
 
-class CompanyModel(BaseModel, UserModel):
+class CompanyModel(BaseModel, UserModel): #
     __tablename__ = 'companies'
+    id = Column(UUID(as_uuid=True), ForeignKey(ID.id, ondelete='CASCADE'), nullable=False)
     name = Column(VARCHAR(100), nullable=False)
     legal_address = Column(VARCHAR(200), nullable=False)
     physical_address = Column(VARCHAR(200), nullable=False)
@@ -85,23 +85,26 @@ class Recommend(types.TypeDecorator):
             student_id, comment = value.split(",")
             return (student_id, comment)
 
-class CuratorModel(BaseModel, UserModel):
+class CuratorModel(BaseModel, UserModel): #
   __tablename__="curators"
+  id = Column(UUID(as_uuid=True), ForeignKey(ID.id, ondelete='CASCADE'), nullable=False)
   university = Column(VARCHAR(100), ForeignKey(University.university_name, ondelete='CASCADE'), nullable=False) # note: 'type university'
   recommended = Column(Recommend())
   
   university_relationship = relationship("University", backref='curators', lazy=True)
 
 
-class MentorModel(BaseModel, UserModel):
+class MentorModel(BaseModel, UserModel): #
     __tablename__ = 'mentors'
+    id = Column(UUID(as_uuid=True), ForeignKey(ID.id, ondelete='CASCADE'), nullable=False)
     curator_id = Column(UUID(as_uuid=True), ForeignKey(CuratorModel.id, ondelete='CASCADE'), nullable=False)
 
     curator = relationship("CuratorModel", backref='mentors', lazy=True)
 
 
-class StudentModel(BaseModel, UserModel):
+class StudentModel(BaseModel, UserModel): #
     __tablename__ = 'students'
+    id = Column(UUID(as_uuid=True), ForeignKey(ID.id, ondelete='CASCADE'), nullable=False)
     mentor_id = Column(UUID(as_uuid=True), ForeignKey(MentorModel.id, ondelete='CASCADE'), nullable=False)
     profession = Column(VARCHAR(30), nullable=False)
     resume = Column(VARCHAR(1000))

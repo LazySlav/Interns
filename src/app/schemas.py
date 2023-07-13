@@ -17,7 +17,7 @@ from pydantic_extra_types.phone_numbers import PhoneNumber
 class ID(BaseModel):
   id: UUID = Field(default_factory=uuid4)
 
-class UserSchema(ID):
+class UserSchema():
   # TODO: these should be SecretStr, not plain str
   login: str = Field(..., max_length=30)
   password: str = Field(..., max_length=30)
@@ -70,6 +70,7 @@ class UniversitySchema(BaseModel):
 
 
 class CuratorSchema(HumanSchema, UserSchema):
+  id: UUID
   university: UniversitySchema
   recommended: list[tuple[UUID,constr(max_length=50)]] = [()] # ? this probably needs to be changed to contain extra info
 
