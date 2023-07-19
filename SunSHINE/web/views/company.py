@@ -35,6 +35,6 @@ def post_profile(request: HttpRequest):
         obj = CompanyModel(**data)
         obj.save()
         data["id"]=obj.id
-        return JsonResponse(data,status=201)
+        return JsonResponse(data,status=200)
     except Exception as e:
         raise

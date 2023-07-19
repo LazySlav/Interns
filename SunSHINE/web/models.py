@@ -1,141 +1,140 @@
-import types
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from uuid import UUID
 from django.contrib.postgres.fields import ArrayField
-import types
 
 
-class ID():
-    id = models.UUIDField(primary_key=True)
+class ID(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, blank=False)
+    class Meta:
+        abstract = True
 
 
-# class UserModel(AbstractUser):
-#     ROLE = [
-#         ("Company", "Company"),
-#         ("Student", "Student"),
-#         ("Curator", "Curator"),
-#         ("Mentor", "Mentor"),
-#     ]
-#     login = models.CharField(max_length=30, primary_key=True)
-#     password = models.CharField(max_length=30)
-#     role = models.CharField(max_length=10, choices=ROLE)
+class UserModel(AbstractUser):
+    ROLE = [
+        ("Company", "Company"),
+        ("Student", "Student"),
+        ("Curator", "Curator"),
+        ("Mentor", "Mentor"),
+    ]
+    role = models.CharField(max_length=10, choices=ROLE, blank=False)
 
 
 class HumanModel():
-    name = models.CharField(max_length=100)
-    surname = models.CharField(max_length=100)
-    patronymic = models.CharField(max_length=100)
-    mail = models.CharField(max_length=100)
-    phone = models.CharField(max_length=11)
+    name = models.CharField(max_length=100, blank=False)
+    surname = models.CharField(max_length=100, blank=False)
+    patronymic = models.CharField(max_length=100, blank=False)
+    mail = models.CharField(max_length=100, blank=False)
+    phone = models.CharField(max_length=11, blank=False)
 
 
 class University(models.Model):
-    university_name = models.CharField(max_length=100, primary_key=True)
+    university_name = models.CharField(max_length=100, primary_key=True, blank=False)
 
 
-# class Recommend(types.TypeDecorator):
-#     impl = types.
-#     def process_bind_param(self, value, dialect):
-#         if value is not None:
-#             student_id, comment = value
-#             return f"{student_id},{comment}"
+class Recommend(models.Model):
+    student_id = models.IntegerField()
+    comment = models.CharField(max_length=255)
 
-#     def process_result_value(self, value, dialect):
-#         if value is not None:
-#             student_id, comment = value.split(",")
-#             return (student_id, comment)
+    def __str__(self):
+        return f"{self.student_id}: {self.comment}"
 
+    class Meta:
+        db_table = "recommend"
 
-# class CuratorModel(models.Model, ID, HumanModel):
-#     login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-#     password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-#     university = models.ForeignKey(University, on_delete=models.CASCADE)
-#     recommended = models.CharField(Recommend())
-
-#     university_relationship = models.OneToOneField(
-#         "University", backref='curators', lazy=True)
-#     login_relationship = models.relationship(
-#         UserModel, backref='users', lazy=True, foreign_keys='UserModel.login')
-#     password_relationship = models.relationship(
-#         UserModel, backref="users", lazy=True, foreign_keys='UserModel.password')
-
-
-class CompanyModel(models.Model, ID):
-    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    # password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+class MyModel(models.Model):
     name = models.CharField(max_length=100)
-    legal_address = models.CharField(max_length=200)
-    physical_address = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20)
-    mail = models.CharField(max_length=100)
+    recommendations = ArrayField(models.ForeignKey(Recommend, on_delete=models.CASCADE), blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "mymodel"
+
+
+class CuratorModel(ID, HumanModel):
+    login = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False)
+    password = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False)
+    university = models.ForeignKey(University, on_delete=models.CASCADE, blank=False)
+    recommended = ArrayField(models.ForeignKey(Recommend, on_delete=models.CASCADE), blank=True)
+
+
+
+class CompanyModel(ID):
+    login = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False)
+    password = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False)
+    name = models.CharField(max_length=100, blank=False)
+    legal_address = models.CharField(max_length=200, blank=False)
+    physical_address = models.CharField(max_length=200, blank=False)
+    phone = models.CharField(max_length=20, blank=False)
+    mail = models.CharField(max_length=100, blank=False)
     description = models.CharField(max_length=500)
 
-#     login_relationship = models.relationship(
-#         UserModel, backref='users', lazy=True, foreign_keys='UserModel.login')
-#     password_relationship = models.relationship(
-#         UserModel, backref="users", lazy=True, foreign_keys='UserModel.password')
+
+class MentorModel(ID, HumanModel):
+    login = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False)
+    password = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False)
+    curator_id = models.ForeignKey(CuratorModel, on_delete=models.CASCADE, blank=False)
 
 
-# class MentorModel(models.Model, ID, HumanModel):
-#     login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-#     password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-#     curator_id = models.ForeignKey(CuratorModel, on_delete=models.CASCADE)
+class Workers(models.Model):
+    profession = models.CharField(max_length=50)
+    count = models.IntegerField()
 
-#     curator = models.relationship(
-#         CuratorModel, backref='mentors', lazy=True)
-#     login_relationship = models.relationship(
-#         UserModel, backref='users', lazy=True, foreign_keys='UserModel.login')
-#     password_relationship = models.relationship(
-#         UserModel, backref="users", lazy=True, foreign_keys='UserModel.password')
+    def __str__(self):
+        return f"{self.profession}: {self.count}"
 
+    class Meta:
+        db_table = "workers"
 
-# class StudentModel(models.Model, ID, HumanModel):
-#     login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-#     password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-#     mentor_id = models.ForeignKey(MentorModel, on_delete=models.CASCADE)
-#     profession = models.CharField(max_length=30)
-#     resume = models.CharField(max_length=1000)
-#     active_vacancy = models.ForeignKey(
-#         "VacancyModel", on_delete=models.CASCADE, null=True)
-#     vacancy_history = models.ArrayField(
-#         models.UUIDField(), null=True)
-#     __table_args__ = (
-#         models.Index('student_short', 'name', 'surname', 'patronymic',
-#                      'profession', 'mentor_id', unique=True),
-#     )
+class MyModel(models.Model):
+    name = models.CharField(max_length=100)
+    workers = ArrayField(models.ForeignKey(Workers, on_delete=models.CASCADE), blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "mymodel"
 
 
-# # class Workers(types.TypeDecorator):
-# #     impl = types.String
-
-# #     def process_bind_param(self, value, dialect):
-# #         if value is not None:
-# #             profession, count = value
-# #             return f"{profession},{count}"
-
-# #     def process_result_value(self, value, dialect):
-# #         if value is not None:
-# #             profession, count = value.split(",")
-# #             return (profession, int(count))
-
-
-# class VacancyModel(models.Model, ID):
-#     company_id = models.ForeignKey(CompanyModel, on_delete=models.CASCADE)
-#     curator_id = models.UUIDField()
-#     workers = models.ArrayField(Workers())
-#     status = models.CharField(max_length=100)
-#     tasks = models.CharField(max_length=250)
-#     start_date = models.DateField()
-#     end_date = models.DateField()
-#     address = models.CharField(max_length=250)
-#     description = models.CharField(max_length=250)
-
-#     company = models.relationship(
-#         CompanyModel, backref='vacancies', lazy=True)
+class VacancyModel(ID):
+    VACANCYSTATUS = [
+    ('not_checked', 'not_checked'),
+    ('checked', 'checked'),
+    ('approved', 'approved'),
+    ('rejected', 'rejected'),
+    ('completed', 'completed')
+    ]
+    company_id = models.ForeignKey(CompanyModel, on_delete=models.CASCADE, blank=False)
+    curator_id = models.UUIDField(blank=False)
+    workers = ArrayField(models.ForeignKey(Workers, on_delete=models.CASCADE), blank=True)
+    status = models.CharField(max_length=20, choices=VACANCYSTATUS, blank=False)
+    tasks = models.CharField(max_length=250, blank=False)
+    start_date = models.DateField(auto_now_add=True)
+    end_date = models.DateField(auto_now_add=True)
+    address = models.CharField(max_length=250, blank=False)
+    description = models.CharField(max_length=250, blank=False)
 
 
-# class TaskModel(models.Model, ID):
+class StudentModel(ID, HumanModel):
+    login = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False, db_index=True)
+    password = models.ForeignKey(UserModel, on_delete=models.CASCADE, blank=False)
+    mentor_id = models.ForeignKey(MentorModel, on_delete=models.CASCADE, blank=False)
+    profession = models.CharField(max_length=30, blank=False, db_index=True)
+    resume = models.CharField(max_length=1000)
+    active_vacancy = models.ForeignKey(VacancyModel, on_delete=models.CASCADE, null=True, blank=False)
+    vacancy_history = ArrayField(models.UUIDField(blank=False), null=True)
+    # __table_args__ = (
+    #     models.Index('student_short', 'name', 'surname', 'patronymic',
+    #                  'profession', 'mentor_id')
+    # )
+
+
+
+
+# class TaskModel(ID):
 #     TASKSTATUS = [
 #         ("not_checked", "not_checked"),
 #         ("checked", "checked"),
@@ -143,33 +142,22 @@ class CompanyModel(models.Model, ID):
 #         ("rejected", "rejected"),
 #         ("completed", "completed"),
 #     ]
-#     mentor_id = models.ForeignKey(MentorModel, on_delete=models.CASCADE)
-#     student_id = models.ForeignKey(StudentModel, on_delete=models.CASCADE)
-#     description = models.CharField(max_length=1000)
-#     status = models.CharField(max_length=20, choices=TASKSTATUS)
-
-#     mentor = models.relationship(
-#         MentorModel, backref='tasks', lazy=True)
-#     student = models.relationship(
-#         StudentModel, backref='tasks', lazy=True)
+#     mentor_id = models.ForeignKey(MentorModel, on_delete=models.CASCADE, blank=False)
+#     student_id = models.ForeignKey(StudentModel, on_delete=models.CASCADE, blank=False)
+#     description = models.CharField(max_length=1000, blank=False)
+#     status = models.CharField(max_length=20, choices=TASKSTATUS, blank=False)
 
 
-# class ChatModel(models.Model, ID):
+
+# class ChatModel(ID):
 #     company_id = models.ForeignKey(
-#         CompanyModel, on_delete=models.CASCADE)
+#         CompanyModel, on_delete=models.CASCADE, blank=False)
 #     student_id = models.ForeignKey(
-#         StudentModel, on_delete=models.CASCADE)
-
-#     company = models.relationship(
-#         CompanyModel, backref='chats', lazy=True)
-#     student = models.relationship(
-#         StudentModel, backref='chats', lazy=True)
+#         StudentModel, on_delete=models.CASCADE, blank=False)
 
 
-# class MessageModel(models.Model, ID):
-#     chat_id = models.ForeignKey(ChatModel, on_delete=models.CASCADE)
-#     body = models.CharField(max_length=1000)
-#     date_time = models.DateTimeField(auto_now_add=True)
 
-#     chat = models.relationship(
-#         ChatModel, backref='messages', lazy=True)
+# class MessageModel(ID):
+#     chat_id = models.ForeignKey(ChatModel, on_delete=models.CASCADE, blank=False)
+#     body = models.CharField(max_length=1000, blank=False)
+#     date_time = models.DateTimeField(auto_now_add=True, blank=False)

@@ -1,9 +1,7 @@
-from django.urls import include, path
+from django.urls import path
 from web.views.company import *
 
-companypatterns = [
-    path("", post_profile),
-    path("<uuid:id>", get_put_delete_profile),
-    # path("vacancies/<id>",vacancy),
-    # path("chats/<id>",chat),
+companytterns = [
+    path('',post_profile, name='company-list'),
+    path('<uuid:id>', get_put_delete_profile, name='company-detail')
 ]
