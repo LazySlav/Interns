@@ -15,16 +15,16 @@ def get_put_delete_profile(request: HttpRequest, id: UUID):
     elif request.method == "POST":
         try:
             data = request.POST.dict()
-            obj = CompanyModel.objects.get(id=data["id"])
-            {exec(f"obj.{attr}={val}") for attr,val in data.items()}
+            obj = CompanyModel.objects.get(id=id)
+            {setattr(obj,attr,val) for attr,val in data.items()}
             obj.save(update_fields=data.keys())
-            return JsonResponse("Successfully updated entry with id={id}")
+            return JsonResponse({"msg":"Successfully updated entry with id={id}"},status=200)
         except Exception as e:
             raise
     elif request.method == "DELETE":
         try:
             CompanyModel.objects.get(id=id).delete()
-            return JsonResponse("Successfully deleted entry with id = {id}")
+            return JsonResponse({"msg":"Successfully deleted entry with id={id}"},status=200)
         except Exception as e:
             raise
 
