@@ -1,0 +1,8 @@
+#main
+django==4.2.3
+
+#postgresql
+psycopg==3.1.9
+
+#auth
+django-oauth-toolkit==2.3.0
