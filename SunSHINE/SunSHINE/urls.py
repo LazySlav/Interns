@@ -16,12 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from web.routers.company import companypatterns
 
-ROUTERS_PATH = "web.routers."
 
+# Wire up our API using automatic URL routing.
+# Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("companies/<id>/", include(ROUTERS_PATH+"company")),
+    path("companies/", include(companypatterns)),
     # path("curators/<id>/", include(ROUTERS_PATH+"curator")),
     # path("mentors/<id>/", include(ROUTERS_PATH+"mentor")),
     # path("students/<id>", include(ROUTERS_PATH+"student")),
