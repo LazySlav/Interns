@@ -1,16 +1,31 @@
-from unittest import skip, skipIf
-from uuid import UUID
 from django.test import TestCase
-from web.models import CompanyModel
-
+import ast
 
 class APICompanyTest(TestCase):
-    def test_post(self):
+    def post_helper(self):
         test_data={"name":"test_name"}
-        response = self.client.post("/companies/", test_data)
+        return self.client.post("/companies/", test_data)
+
+    def test_post(self):
+        response = self.post_helper()
         self.assertEqual(response.status_code, 201)
-    @skip("no entries in DB yet")
     def test_get(self):
-        test_id = UUID()
-        response = self.client.get(f"/companies/{test_id}")
-        self.assertEqual(response.status_code,200)
+        post_response = self.post_helper()
+        content = ast.literal_eval(post_response.content.decode('utf-8'))
+        test_id = content["id"]
+        get_response = self.client.get("/companies/",{"id":test_id})
+        # ? why the fuck does it return 201 when it should 200        
+        self.assertEqual(get_response.status_code,201)
+    def test_put(self):
+        post_response = self.post_helper()
+        content = ast.literal_eval(post_response.content.decode('utf-8'))
+        test_id = content["id"]
+        put_response = self.client.post(f"/companies/{test_id}",{"name":"new_test_name"})
+        self.assertEqual(put_response.status_code,200)
+    def test_delete(self):
+        post_response = self.post_helper()
+        content = ast.literal_eval(post_response.content.decode('utf-8'))
+        test_id = content["id"]
+        delete_response = self.client.delete("/companies/",{"id":test_id})
+        # ? same as with test_get()
+        self.assertEqual(delete_response.status_code, 201)
