@@ -42,15 +42,15 @@ class Recommend(models.Model):
     class Meta:
         db_table = "recommend"
 
-class MyModel(models.Model):
-    name = models.CharField(max_length=100)
-    recommendations = ArrayField(models.ForeignKey(Recommend, on_delete=models.CASCADE), blank=True)
+# class MyModel(models.Model):
+#     name = models.CharField(max_length=100)
+#     recommendations = ArrayField(models.ForeignKey(Recommend, on_delete=models.CASCADE), blank=True)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
-    class Meta:
-        db_table = "mymodel"
+#     class Meta:
+#         db_table = "mymodel"
 
 
 class CuratorModel(ID, HumanModel):
@@ -88,15 +88,15 @@ class Workers(models.Model):
     class Meta:
         db_table = "workers"
 
-class MyModel(models.Model):
-    name = models.CharField(max_length=100)
-    workers = ArrayField(models.ForeignKey(Workers, on_delete=models.CASCADE), blank=True)
+# class MyModel(models.Model):
+#     name = models.CharField(max_length=100)
+#     workers = ArrayField(models.ForeignKey(Workers, on_delete=models.CASCADE), blank=True)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
-    class Meta:
-        db_table = "mymodel"
+#     class Meta:
+#         db_table = "mymodel"
 
 
 class VacancyModel(ID):
