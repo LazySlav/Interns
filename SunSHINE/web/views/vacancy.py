@@ -1,9 +1,8 @@
 import ast
 from django.forms import ValidationError
 from django.http import HttpRequest, JsonResponse
-from web.models import CuratorModel, UniversityTable
+from web.models import VacancyModel
 from django.db import models
-
 
 
 
@@ -29,8 +28,8 @@ def main(request: HttpRequest, id: int | None = None):
         id = __parse_request(request)["id"]
         __id_check(id)
         try:
-            obj = CuratorModel.objects.get(id=id)
-        except (CuratorModel.DoesNotExist, CuratorModel.MultipleObjectsReturned):
+            obj = VacancyModel.objects.get(id=id)
+        except (VacancyModel.DoesNotExist, VacancyModel.MultipleObjectsReturned):
             raise
         data = __parse_model(obj)
         return JsonResponse(data)
@@ -38,15 +37,13 @@ def main(request: HttpRequest, id: int | None = None):
 
     elif request.method == "POST":
         data = __parse_request(request)
-        data["university"]=UniversityTable.objects.get(university_name=data["university"])
-        obj = CuratorModel(**data)
+        obj = VacancyModel(**data)
         try:
             obj.full_clean()
         except ValidationError as e:
             raise
         obj.save()
         data["id"] = obj.id
-        data["university"]=obj.university.university_name
         return JsonResponse(data, status=201)
     
 
@@ -54,12 +51,11 @@ def main(request: HttpRequest, id: int | None = None):
         id = __parse_request(request)["id"]
         __id_check(id)
         try:
-            obj = CuratorModel.objects.get(id=id)
-        except (CuratorModel.DoesNotExist, CuratorModel.MultipleObjectsReturned) as e:
+            obj = VacancyModel.objects.get(id=id)
+        except (VacancyModel.DoesNotExist, VacancyModel.MultipleObjectsReturned) as e:
             raise
         data = __parse_request(request)
         data.pop("id")
-        data["university"]=UniversityTable.objects.get(university_name=data["university"])
         {setattr(obj, attr, val) for attr, val in data.items()}
         obj.save(update_fields=data.keys())
         return JsonResponse({"msg": f"Successfully updated entry with id={id}"}, status=200)
@@ -69,8 +65,8 @@ def main(request: HttpRequest, id: int | None = None):
         id = __parse_request(request)["id"]
         __id_check(id)
         try:
-            obj = CuratorModel.objects.get(id=id)
-        except (CuratorModel.DoesNotExist, CuratorModel.MultipleObjectsReturned) as e:
+            obj = VacancyModel.objects.get(id=id)
+        except (VacancyModel.DoesNotExist, VacancyModel.MultipleObjectsReturned) as e:
             raise
         obj.delete()
         return JsonResponse({"msg": f"Successfully deleted entry with id={id}"}, status=200)

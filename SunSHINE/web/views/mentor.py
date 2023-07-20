@@ -1,7 +1,7 @@
 import ast
 from django.forms import ValidationError
 from django.http import HttpRequest, JsonResponse
-from web.models import MentorModel
+from web.models import CuratorModel, MentorModel
 from django.db import models
 
 
@@ -37,6 +37,7 @@ def main(request: HttpRequest, id: int | None = None):
 
     elif request.method == "POST":
         data = __parse_request(request)
+        data["curator_id"]=CuratorModel.objects.get(id=data["curator_id"])
         obj = MentorModel(**data)
         try:
             obj.full_clean()
@@ -44,6 +45,7 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         obj.save()
         data["id"] = obj.id
+        data["curator_id"]=obj.curator_id.id
         return JsonResponse(data, status=201)
     
 

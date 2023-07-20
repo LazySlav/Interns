@@ -1,5 +1,6 @@
 import random
 from django.db import models
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 # # * In case of POSTGRES - use this
 # from django.contrib.postgres.fields import ArrayField
@@ -27,50 +28,49 @@ class ID(models.Model):
         abstract = True
 
 
-class Human():
+class Human(models.Model):
     name = models.CharField(max_length=100)
     surname = models.CharField(max_length=100)
-    patronymic = models.CharField(max_length=100)
-    mail = models.CharField(max_length=100)
-    phone = models.CharField(max_length=11)
-
+    patronymic = models.CharField(max_length=100,blank=True)
+    mail = models.EmailField(max_length=100)
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone = models.CharField(validators=[phone_regex], max_length=17)
+    class Meta:
+        abstract = True
 
 class CompanyModel(ID):
-    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    # password = models.ForeignKey(
-    #     UserModel, on_delete=models.CASCADE)
+    # login = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    # password = models.OneToOneField(UserModel, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     legal_address = models.CharField(max_length=200)
     physical_address = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20)
-    mail = models.CharField(max_length=100)
+    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
+    phone = models.CharField(validators=[phone_regex], max_length=17)
+    mail = models.EmailField(max_length=100)
     description = models.CharField(max_length=500, blank=True)
 
 
 class CuratorModel(ID, Human):
-    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    # password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    university = models.ForeignKey("UniversityTable", on_delete=models.CASCADE)
-    recommended = models.ForeignKey("RecommendedTable", on_delete=models.CASCADE, blank=True)
+    # login = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    # password = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    university = models.ForeignKey("UniversityTable", on_delete=models.DO_NOTHING)
+    recommended = models.ForeignKey("RecommendedTable", on_delete=models.CASCADE, blank=True,null=True)
 
 
 class MentorModel(ID, Human):
-    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    # password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    curator_id = models.ForeignKey(
-        CuratorModel, on_delete=models.CASCADE)
+    # login = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    # password = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    curator = models.ForeignKey(CuratorModel, on_delete=models.DO_NOTHING)
 
 
 class StudentModel(ID, Human):
-    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE, db_index=True)
-    # password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    mentor_id = models.ForeignKey(
-        MentorModel, on_delete=models.CASCADE)
+    # login = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    # password = models.OneToOneField(UserModel, on_delete=models.CASCADE)
+    mentor = models.ForeignKey(MentorModel, on_delete=models.DO_NOTHING)
     profession = models.CharField(
-        max_length=30, db_index=True)
+        max_length=30)
     resume = models.CharField(max_length=1000, blank=True)
-    active_vacancy = models.ForeignKey(
-        "VacancyModel", on_delete=models.CASCADE, blank=True)
+    active_vacancy = models.ForeignKey("VacancyModel", on_delete=models.DO_NOTHING, blank=True)
     # __table_args__ = (
     #     models.Index('student_short', 'name', 'surname', 'patronymic',
     #                  'profession', 'mentor_id')
@@ -85,12 +85,9 @@ class VacancyModel(ID):
         ('rejected', 'rejected'),
         ('completed', 'completed')
     ]
-    company_id = models.ForeignKey(
-        CompanyModel, on_delete=models.CASCADE)
-    curator_id = models.IntegerField()
-    workers = models.ForeignKey("WorkersTable", on_delete=models.CASCADE, blank=True)
-    status = models.CharField(
-        max_length=20, choices=VACANCYSTATUS)
+    company = models.ForeignKey(CompanyModel, on_delete=models.DO_NOTHING)
+    curator = models.IntegerField()
+    status = models.CharField(max_length=20, choices=VACANCYSTATUS)
     tasks = models.CharField(max_length=250)
     start_date = models.DateField(auto_now_add=True)
     end_date = models.DateField(auto_now_add=True)
@@ -107,46 +104,41 @@ class VacancyModel(ID):
 #         ("rejected", "rejected"),
 #         ("completed", "completed"),
 #     ]
-#     mentor_id = models.ForeignKey(MentorModel, on_delete=models.CASCADE)
-#     student_id = models.FosreignKey(StudentModel, on_delete=models.CASCADE)
+#     mentor_id = models.ForeignKey(MentorModel, on_delete=models.DO_NOTHING)
+#     student_id = models.FosreignKey(StudentModel, on_delete=models.DO_NOTHING)
 #     description = models.CharField(max_length=1000)
 #     status = models.CharField(max_length=20, choices=TASKSTATUS)
 
 
 # class ChatModel(ID):
 #     company_id = models.ForeignKey(
-#         CompanyModel, on_delete=models.CASCADE)
+#         CompanyModel, on_delete=models.DO_NOTHING)
 #     student_id = models.ForeignKey(
-#         StudentModel, on_delete=models.CASCADE)
+#         StudentModel, on_delete=models.DO_NOTHING)
 
 
 # class MessageModel(ID):
-#     chat_id = models.ForeignKey(ChatModel, on_delete=models.CASCADE)
+#     chat_id = models.ForeignKey(ChatModel, on_delete=models.DO_NOTHING)
 #     body = models.CharField(max_length=1000)
 #     date_time = models.DateTimeField(auto_now_add=True)
 
 class UniversityTable(models.Model):
-    university_name = models.CharField(max_length=100, primary_key=True)
+    university = models.CharField(max_length=100, primary_key=True)
 
 class WorkersTable(models.Model):
-    vacancy_id = models.IntegerField(primary_key=True)
+    vacancy = models.ForeignKey("VacancyModel", primary_key=True, on_delete=models.CASCADE)
     profession = models.CharField(max_length=50)
     amount = models.IntegerField()
 
     def __str__(self):
         return f"{self.profession}: {self.amount}"
 
-    class Meta:
-        db_table = "workers"
 
 
 class RecommendedTable(models.Model):
-    curator_id = models.IntegerField(primary_key=True)
-    student_id = models.IntegerField()
+    curator = models.IntegerField(primary_key=True)
+    student = models.IntegerField()
     comment = models.CharField(max_length=255, blank=True)
 
     # def __str__(self):
     #     return f"{self.student_id}: {self.comment}"
-
-    class Meta:
-        db_table = "recommended"

@@ -18,14 +18,17 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
 
-from web.views import company,curator,mentor,student
+from web.views import company, curator, mentor, student, vacancy, university, workers
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("companies/", company.main, name="company-list"),
-    path('curators/',curator.main, name='curator-list'),
-    path('mentors/',mentor.main, name='mentor-list'),
-    path('students/',student.main, name='student-list'),
+    path("companies/", company.main),
+    path('curators/', curator.main),
+    path('mentors/', mentor.main),
+    path('students/', student.main),
+    path('vacancies/', vacancy.main),
+    path("university/", university.main),
+    path("workers/", workers.main),
 ]
