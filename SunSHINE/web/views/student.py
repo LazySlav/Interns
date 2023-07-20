@@ -1,40 +1,70 @@
-from json import dumps
-import json
-from uuid import UUID
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
-from django.shortcuts import render
+import ast
+from django.forms import ValidationError
+from django.http import HttpRequest, JsonResponse
 from web.models import StudentModel
+from django.db import models
+
+def __parse_request(request: HttpRequest):
+    return ast.literal_eval(request.body.decode('utf-8'))
 
 
-def get_put_delete_profile(request: HttpRequest, id: UUID):
+def __parse_model(obj: models.Model):
+    data = obj.__dict__
+    data.pop("_state")
+    return data
+
+
+def __id_check(id):
+    if not id:
+        raise ValidationError("No id provided")
+
+
+def get_put_delete_profile(request: HttpRequest, id: int | None = None):
+
+
     if request.method == 'GET':
+        id = __parse_request(request)["id"]
+        __id_check(id)
         try:
-            return StudentModel.objects.get(id=id)
+            obj = StudentModel.objects.get(id=id)
         except (StudentModel.DoesNotExist, StudentModel.MultipleObjectsReturned):
-            raise    
+            raise
+        data = __parse_model(obj)
+        return JsonResponse(data)
+    
+
     elif request.method == "POST":
-        try:
-            data = request.POST.dict()
-            obj = StudentModel.objects.get(id=data["id"])
-            {exec(f"obj.{attr}={val}") for attr,val in data.items()}
-            obj.save(update_fields=data.keys())
-            return JsonResponse("Successfully updated entry with id={id}")
-        except Exception as e:
-            raise
-    elif request.method == "DELETE":
-        try:
-            StudentModel.objects.get(id=id).delete()
-            return JsonResponse("Successfully deleted entry with id = {id}")
-        except Exception as e:
-            raise
-
-
-def post_profile(request: HttpRequest):
-    try:
-        data = request.POST.dict()
+        data = __parse_request(request)
         obj = StudentModel(**data)
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            raise
         obj.save()
-        data["id"]=obj.id
-        return JsonResponse(data,status=200)
-    except Exception as e:
-        raise
+        data["id"] = obj.id
+        return JsonResponse(data, status=201)
+    
+
+    elif request.method == "PUT":
+        id = __parse_request(request)["id"]
+        __id_check(id)
+        try:
+            obj = StudentModel.objects.get(id=id)
+        except (StudentModel.DoesNotExist, StudentModel.MultipleObjectsReturned) as e:
+            raise
+        data = __parse_request(request)
+        data.pop("id")
+        {setattr(obj, attr, val) for attr, val in data.items()}
+        obj.save(update_fields=data.keys())
+        return JsonResponse({"msg": f"Successfully updated entry with id={id}"}, status=200)
+    
+
+    elif request.method == "DELETE":
+        id = __parse_request(request)["id"]
+        __id_check(id)
+        try:
+            obj = StudentModel.objects.get(id=id)
+        except (StudentModel.DoesNotExist, StudentModel.MultipleObjectsReturned) as e:
+            raise
+        obj.delete()
+        return JsonResponse({"msg": f"Successfully deleted entry with id={id}"}, status=200)

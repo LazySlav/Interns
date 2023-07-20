@@ -25,7 +25,7 @@ from web.views import company,curator,mentor,student
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("companies/", company.get_put_delete_profile),
-    path('curators/',curator.post_profile, name='curator-list'),
-    path('mentors/',mentor.post_profile, name='mentor-list'),
-    path('students/',student.post_profile, name='student-list'),
+    path('curators/',curator.get_put_delete_profile, name='curator-list'),
+    path('mentors/',mentor.get_put_delete_profile, name='mentor-list'),
+    path('students/',student.get_put_delete_profile, name='student-list'),
 ]
