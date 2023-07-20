@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.urls import include, path
 
 from web.views import company,curator,mentor,student
@@ -23,12 +24,8 @@ from web.views import company,curator,mentor,student
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("companies/<int:id>/", company.get_put_delete_profile),
-    path("companies/", company.post_profile),
+    path("companies/", company.get_put_delete_profile),
     path('curators/',curator.post_profile, name='curator-list'),
-    path('curators/<int:id>', curator.get_put_delete_profile, name='curator-detail'),
     path('mentors/',mentor.post_profile, name='mentor-list'),
-    path('mentors/<int:id>', mentor.get_put_delete_profile, name='mentor-detail'),
     path('students/',student.post_profile, name='student-list'),
-    path('students/<int:id>', student.get_put_delete_profile, name='student-detail'),
 ]
