@@ -10,6 +10,11 @@ import studentChat from "@/views/studentChat";
 import studentProfile from "@/views/studentProfile";
 import studentChangeProfile from "@/views/studentChangeProfile";
 import studentInters from "@/views/studentInters";
+import company from "@/views/company.vue";
+import companySignup from "@/views/companySignup.vue";
+import companyProfile from "@/views/companyProfile.vue";
+import companyChangeProfile from "@/views/companyChangeProfile.vue";
+import companyChat from "@/views/companyChat.vue";
 
 
 export default [
@@ -58,5 +63,27 @@ export default [
         path: '/:pathMatch(.*)*',
         name: 'error',
         component: error
-    }
+    },
+    {
+        path: '/company',
+        redirect: '/company/signup',
+        component: company,
+    },
+    {
+        path: '/company/signup',
+        component: companySignup
+    },
+    {
+        path: '/company/profile',
+        redirect: false,
+        component: companyProfile,
+    },
+    {
+        path: '/company/profile/edit',
+        component:  companyChangeProfile,
+    },
+    {
+        path: '/company/chat',
+        component: companyChat,
+    },
 ]
