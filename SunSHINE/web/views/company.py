@@ -1,20 +1,23 @@
-from json import dumps
-import json
-from uuid import UUID
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound, JsonResponse
-from django.shortcuts import render
+import ast
+from django.forms import ValidationError
+from django.http import HttpRequest, JsonResponse
 from web.models import CompanyModel
 
+# JSON_400 = JsonResponse({"msg":"Wrong request params"},status=400)
+def parse_request(request : HttpRequest):
+    return ast.literal_eval(request.body.decode('utf-8'))
 
-def get_put_delete_profile(request: HttpRequest, id: UUID):
+
+
+def get_put_delete_profile(request: HttpRequest, id: int):
     if request.method == 'GET':
         try:
-            return CompanyModel.objects.get(id=id)
+            return CompanyModel.objects.get(id=request.GET.get("id"))
         except (CompanyModel.DoesNotExist, CompanyModel.MultipleObjectsReturned):
-            raise    
+            raise
     elif request.method == "POST":
         try:
-            data = request.POST.dict()
+            data = ast.literal_eval(request.body.decode('utf-8'))
             obj = CompanyModel.objects.get(id=id)
             {setattr(obj,attr,val) for attr,val in data.items()}
             obj.save(update_fields=data.keys())
@@ -30,11 +33,14 @@ def get_put_delete_profile(request: HttpRequest, id: UUID):
 
 
 def post_profile(request: HttpRequest):
-    try:
-        data = request.POST.dict()
+    if request.method == "POST":
+        data = parse_request(request)
         obj = CompanyModel(**data)
+        try:
+            obj.full_clean()
+        except ValidationError as e:
+            raise
         obj.save()
         data["id"]=obj.id
-        return JsonResponse(data,status=200)
-    except Exception as e:
-        raise
+        return JsonResponse(data,status=201)
+    return JsonResponse({"msg":"Wrong request method"})

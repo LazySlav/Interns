@@ -16,22 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from web.routers.company import companytterns
-from web.routers.curator import curatorpatterns
-from web.routers.mentor import mentorpatterns
-from web.routers.student import studentpatterns
 
+from web.views import company,curator,mentor,student
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("companies/", include(companytterns)),
-    path("curator/", include(curatorpatterns)),
-    path("mentor/", include(mentorpatterns)),
-    path("student/", include(studentpatterns)),
-
-    # path("curators/<id>/", include(ROUTERS_PATH+"curator")),
-    # path("mentors/<id>/", include(ROUTERS_PATH+"mentor")),
-    # path("students/<id>", include(ROUTERS_PATH+"student")),
+    path("companies/<int:id>/", company.get_put_delete_profile),
+    path("companies/", company.post_profile),
+    path('curators/',curator.post_profile, name='curator-list'),
+    path('curators/<int:id>', curator.get_put_delete_profile, name='curator-detail'),
+    path('mentors/',mentor.post_profile, name='mentor-list'),
+    path('mentors/<int:id>', mentor.get_put_delete_profile, name='mentor-detail'),
+    path('students/',student.post_profile, name='student-list'),
+    path('students/<int:id>', student.get_put_delete_profile, name='student-detail'),
 ]
