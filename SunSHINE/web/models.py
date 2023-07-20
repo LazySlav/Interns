@@ -9,14 +9,6 @@ from django.contrib.auth.models import AbstractUser
 # class WorkersField(ArrayField):
 
 
-class ID(models.Model):
-    id = models.IntegerField(
-        primary_key=True, default=random.randint(100_000, 2_147_483_646), editable=False)
-
-    class Meta:
-        abstract = True
-
-
 # class UserModel(AbstractUser):
 #     ROLE = [
 #         ("Company", "Company"),
@@ -27,38 +19,20 @@ class ID(models.Model):
 #     role = models.CharField(max_length=10, choices=ROLE)
 
 
-class HumanModel():
+class ID(models.Model):
+    id = models.IntegerField(
+        primary_key=True, default=random.randint(100_000, 2_147_483_646), editable=False)
+
+    class Meta:
+        abstract = True
+
+
+class Human():
     name = models.CharField(max_length=100)
     surname = models.CharField(max_length=100)
     patronymic = models.CharField(max_length=100)
     mail = models.CharField(max_length=100)
     phone = models.CharField(max_length=11)
-
-
-class University(models.Model):
-    university_name = models.CharField(max_length=100, primary_key=True)
-
-
-class Recommend(models.Model):
-    curator_id = models.IntegerField(primary_key=True)
-    student_id = models.IntegerField()
-    comment = models.CharField(max_length=255, blank=True)
-
-    # def __str__(self):
-    #     return f"{self.student_id}: {self.comment}"
-
-    class Meta:
-        db_table = "recommend"
-
-
-class CuratorModel(ID, HumanModel):
-    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    # password = models.ForeignKey(
-    #     UserModel, on_delete=models.CASCADE)
-    university = models.ForeignKey(
-        University, on_delete=models.CASCADE)
-    recommended = models.ForeignKey(
-        Recommend, on_delete=models.CASCADE, blank=True)
 
 
 class CompanyModel(ID):
@@ -73,24 +47,34 @@ class CompanyModel(ID):
     description = models.CharField(max_length=500, blank=True)
 
 
-class MentorModel(ID, HumanModel):
+class CuratorModel(ID, Human):
     # login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
-    # password = models.ForeignKey(
-    #     UserModel, on_delete=models.CASCADE)
+    # password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    university = models.ForeignKey("UniversityTable", on_delete=models.CASCADE)
+    recommended = models.ForeignKey("RecommendedTable", on_delete=models.CASCADE, blank=True)
+
+
+class MentorModel(ID, Human):
+    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    # password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
     curator_id = models.ForeignKey(
         CuratorModel, on_delete=models.CASCADE)
 
 
-class Workers(models.Model):
-    vacancy_id = models.IntegerField(primary_key=True)
-    profession = models.CharField(max_length=50)
-    amount = models.IntegerField()
-
-    def __str__(self):
-        return f"{self.profession}: {self.amount}"
-
-    class Meta:
-        db_table = "workers"
+class StudentModel(ID, Human):
+    # login = models.ForeignKey(UserModel, on_delete=models.CASCADE, db_index=True)
+    # password = models.ForeignKey(UserModel, on_delete=models.CASCADE)
+    mentor_id = models.ForeignKey(
+        MentorModel, on_delete=models.CASCADE)
+    profession = models.CharField(
+        max_length=30, db_index=True)
+    resume = models.CharField(max_length=1000, blank=True)
+    active_vacancy = models.ForeignKey(
+        "VacancyModel", on_delete=models.CASCADE, blank=True)
+    # __table_args__ = (
+    #     models.Index('student_short', 'name', 'surname', 'patronymic',
+    #                  'profession', 'mentor_id')
+    # )
 
 
 class VacancyModel(ID):
@@ -104,7 +88,7 @@ class VacancyModel(ID):
     company_id = models.ForeignKey(
         CompanyModel, on_delete=models.CASCADE)
     curator_id = models.IntegerField()
-    workers = models.ForeignKey(Workers, on_delete=models.CASCADE, blank=True)
+    workers = models.ForeignKey("WorkersTable", on_delete=models.CASCADE, blank=True)
     status = models.CharField(
         max_length=20, choices=VACANCYSTATUS)
     tasks = models.CharField(max_length=250)
@@ -113,23 +97,6 @@ class VacancyModel(ID):
     address = models.CharField(max_length=250)
     description = models.CharField(max_length=250)
 
-
-class StudentModel(ID, HumanModel):
-    # login = models.ForeignKey(
-    #     UserModel, on_delete=models.CASCADE, db_index=True)
-    # password = models.ForeignKey(
-    #     UserModel, on_delete=models.CASCADE)
-    mentor_id = models.ForeignKey(
-        MentorModel, on_delete=models.CASCADE)
-    profession = models.CharField(
-        max_length=30, db_index=True)
-    resume = models.CharField(max_length=1000, blank=True)
-    active_vacancy = models.ForeignKey(
-        VacancyModel, on_delete=models.CASCADE, blank=True)
-    # __table_args__ = (
-    #     models.Index('student_short', 'name', 'surname', 'patronymic',
-    #                  'profession', 'mentor_id')
-    # )
 
 
 # class TaskModel(ID):
@@ -157,3 +124,29 @@ class StudentModel(ID, HumanModel):
 #     chat_id = models.ForeignKey(ChatModel, on_delete=models.CASCADE)
 #     body = models.CharField(max_length=1000)
 #     date_time = models.DateTimeField(auto_now_add=True)
+
+class UniversityTable(models.Model):
+    university_name = models.CharField(max_length=100, primary_key=True)
+
+class WorkersTable(models.Model):
+    vacancy_id = models.IntegerField(primary_key=True)
+    profession = models.CharField(max_length=50)
+    amount = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.profession}: {self.amount}"
+
+    class Meta:
+        db_table = "workers"
+
+
+class RecommendedTable(models.Model):
+    curator_id = models.IntegerField(primary_key=True)
+    student_id = models.IntegerField()
+    comment = models.CharField(max_length=255, blank=True)
+
+    # def __str__(self):
+    #     return f"{self.student_id}: {self.comment}"
+
+    class Meta:
+        db_table = "recommended"

@@ -19,7 +19,7 @@ def __id_check(id):
         raise ValidationError("No id provided")
 
 
-def get_put_delete_profile(request: HttpRequest, id: int | None = None):
+def main(request: HttpRequest, id: int | None = None):
 
 
     if request.method == 'GET':

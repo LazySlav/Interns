@@ -24,8 +24,8 @@ from web.views import company,curator,mentor,student
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("companies/", company.get_put_delete_profile),
-    path('curators/',curator.get_put_delete_profile, name='curator-list'),
-    path('mentors/',mentor.get_put_delete_profile, name='mentor-list'),
-    path('students/',student.get_put_delete_profile, name='student-list'),
+    path("companies/", company.main, name="company-list"),
+    path('curators/',curator.main, name='curator-list'),
+    path('mentors/',mentor.main, name='mentor-list'),
+    path('students/',student.main, name='student-list'),
 ]
