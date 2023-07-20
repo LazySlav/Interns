@@ -5,7 +5,6 @@ from web.models import CompanyModel
 from django.db import models
 
 
-
 def __parse_request(request: HttpRequest):
     return ast.literal_eval(request.body.decode('utf-8'))
 
@@ -23,7 +22,6 @@ def __id_check(id):
 
 def main(request: HttpRequest, id: int | None = None):
 
-
     if request.method == 'GET':
         id = __parse_request(request)["id"]
         __id_check(id)
@@ -33,7 +31,6 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         data = __parse_model(obj)
         return JsonResponse(data)
-    
 
     elif request.method == "POST":
         data = __parse_request(request)
@@ -45,7 +42,6 @@ def main(request: HttpRequest, id: int | None = None):
         obj.save()
         data["id"] = obj.id
         return JsonResponse(data, status=201)
-    
 
     elif request.method == "PUT":
         id = __parse_request(request)["id"]
@@ -59,7 +55,6 @@ def main(request: HttpRequest, id: int | None = None):
         {setattr(obj, attr, val) for attr, val in data.items()}
         obj.save(update_fields=data.keys())
         return JsonResponse({"msg": f"Successfully updated entry with id={id}"}, status=200)
-    
 
     elif request.method == "DELETE":
         id = __parse_request(request)["id"]

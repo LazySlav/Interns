@@ -7,7 +7,7 @@ from django.db import models
 
 
 
-def __parse_request(request: HttpRequest):
+def __parse_request(request: HttpRequest) -> dict:
     return ast.literal_eval(request.body.decode('utf-8'))
 
 
@@ -38,7 +38,7 @@ def main(request: HttpRequest, id: int | None = None):
 
     elif request.method == "POST":
         data = __parse_request(request)
-        data["university"]=UniversityTable.objects.get(university_name=data["university"])
+        data["university"]=UniversityTable.objects.get(university=data["university"])
         obj = CuratorModel(**data)
         try:
             obj.full_clean()
@@ -46,7 +46,7 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         obj.save()
         data["id"] = obj.id
-        data["university"]=obj.university.university_name
+        data["university"]=obj.university.university
         return JsonResponse(data, status=201)
     
 
@@ -59,7 +59,8 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         data = __parse_request(request)
         data.pop("id")
-        data["university"]=UniversityTable.objects.get(university_name=data["university"])
+        if data.get("university",None) is not None:
+            data["university"]=UniversityTable.objects.get(university=data["university"])
         {setattr(obj, attr, val) for attr, val in data.items()}
         obj.save(update_fields=data.keys())
         return JsonResponse({"msg": f"Successfully updated entry with id={id}"}, status=200)

@@ -51,6 +51,7 @@ def main(request: HttpRequest, university: int | None = None):
         university = __parse_request(request)["university"]
         __id_check(university)
         try:
+            print(university)
             obj = UniversityTable.objects.get(university=university)
         except (UniversityTable.DoesNotExist, UniversityTable.MultipleObjectsReturned) as e:
             raise
