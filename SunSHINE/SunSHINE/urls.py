@@ -27,6 +27,10 @@ from web.routers.student import studentpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("companies/", include(companytterns)),
+    path("curator/", include(curatorpatterns)),
+    path("mentor/", include(mentorpatterns)),
+    path("student/", include(studentpatterns)),
+
     # path("curators/<id>/", include(ROUTERS_PATH+"curator")),
     # path("mentors/<id>/", include(ROUTERS_PATH+"mentor")),
     # path("students/<id>", include(ROUTERS_PATH+"student")),
