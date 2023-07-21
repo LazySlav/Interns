@@ -41,7 +41,7 @@ def main(request: HttpRequest, id: UUID | None = None):
             # company_dict = json.dumps(company_list, cls=DjangoJSONEncoder)
             # print(company_dict)
             # return JsonResponse({"companies":company_dict})
-
+            pass
     elif request.method == "POST":
         data = __parse_request(request)
         obj = CompanyModel(**data)
