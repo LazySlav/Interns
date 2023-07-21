@@ -15,6 +15,11 @@ import companySignup from "@/views/companySignup.vue";
 import companyProfile from "@/views/companyProfile.vue";
 import companyChangeProfile from "@/views/companyChangeProfile.vue";
 import companyChat from "@/views/companyChat.vue";
+import companyRequests from "@/views/companyRequests.vue";
+import companyRequestsCreate from "@/views/companyRequestsCreate.vue";
+import curatorProfile from "@/views/curatorProfile.vue";
+import curator from "@/views/curator.vue";
+import curatorChangeProfile from "@/views/curatorChangeProfile.vue";
 
 
 export default [
@@ -85,5 +90,27 @@ export default [
     {
         path: '/company/chat',
         component: companyChat,
+    },
+    {
+        path: '/company/requests',
+        component: companyRequests,
+    },
+    {
+        path: '/company/requests/create',
+        component: companyRequestsCreate,
+    },
+    {
+        path: '/curator',
+        redirect: '/curator/profile',
+        component: curator,
+    },
+    {
+        path: '/curator/profile',
+        redirect: false,
+        component: curatorProfile,
+    },
+    {
+        path: '/curator/profile/edit',
+        component:  curatorChangeProfile,
     },
 ]

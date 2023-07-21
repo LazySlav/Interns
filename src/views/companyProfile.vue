@@ -89,7 +89,7 @@ export default {
         },
         {
           id: 2,
-          path: '/company/profile',
+          path: '/company/requests',
           text: 'Заявки',
           active: false,
         },

@@ -1,5 +1,5 @@
 <template>
-  <div class="studentChangeProfile">
+  <div class="companyChangeProfile">
     <v-headerComp/>
     <v-main-wrapper class="v-main-cont">
       <v-sidebar>
@@ -92,7 +92,7 @@ export default {
         },
         {
           id: 2,
-          path: '/company/profile',
+          path: '/company/requests',
           text: 'Заявки',
           active: false,
         },
@@ -106,7 +106,7 @@ export default {
 
       inputList: [
         {
-          name: 'input6',
+          name: 'input1',
           title: 'Почта',
           value: 'example@gmail.com',
           placeholder: 'example@gmail.com',
@@ -116,7 +116,7 @@ export default {
           error: false,
         },
         {
-          name: 'input7',
+          name: 'input2',
           title: 'Телефон',
           value: '8-999-999-99-99',
           placeholder: '8-999-999-99-99',

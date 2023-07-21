@@ -21,9 +21,18 @@
             </v-list-input>
           </div>
           <div class="v-block__bottom flex-center">
-            <v-buttton>
-              Отправить
-            </v-buttton>
+            <router-link
+                to="/company/profile"
+                custom
+                v-slot="{ navigate }"
+            >
+              <v-buttton
+                  @click="navigate"
+                  role="link"
+              >
+                Отправить
+              </v-buttton>
+            </router-link>
           </div>
         </form>
       </v-block>
