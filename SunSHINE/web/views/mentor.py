@@ -1,4 +1,5 @@
 import ast
+from uuid import UUID
 from django.forms import ValidationError
 from django.http import HttpRequest, JsonResponse
 from web.models import CuratorModel, MentorModel
@@ -21,7 +22,7 @@ def __id_check(id):
         raise ValidationError("No id provided")
 
 
-def main(request: HttpRequest, id: int | None = None):
+def main(request: HttpRequest, id: UUID | None = None):
 
 
     if request.method == 'GET':
@@ -37,7 +38,7 @@ def main(request: HttpRequest, id: int | None = None):
 
     elif request.method == "POST":
         data = __parse_request(request)
-        data["curator_id"]=CuratorModel.objects.get(id=data["curator_id"])
+        data["curator"]=CuratorModel.objects.get(id=data["curator"])
         obj = MentorModel(**data)
         try:
             obj.full_clean()
@@ -45,7 +46,7 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         obj.save()
         data["id"] = obj.id
-        data["curator_id"]=obj.curator_id.id
+        data["curator"]=obj.curator.id
         return JsonResponse(data, status=201)
     
 
@@ -58,6 +59,8 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         data = __parse_request(request)
         data.pop("id")
+        if (curator_id:=data.get("curator",None)) is not None:
+            data["curator"]=CuratorModel.objects.get(id=curator_id)
         {setattr(obj, attr, val) for attr, val in data.items()}
         obj.save(update_fields=data.keys())
         return JsonResponse({"msg": f"Successfully updated entry with id={id}"}, status=200)

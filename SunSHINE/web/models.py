@@ -1,4 +1,4 @@
-import random
+import uuid
 from django.db import models
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
@@ -21,12 +21,11 @@ from django.contrib.auth.models import AbstractUser
 
 
 class ID(models.Model):
-    id = models.IntegerField(
-        primary_key=True, default=random.randint(100_000, 2_147_483_646), editable=False)
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False)
 
     class Meta:
         abstract = True
-# {"id":"440420080"}
 
 
 class Human(models.Model):
@@ -40,7 +39,6 @@ class Human(models.Model):
 
     class Meta:
         abstract = True
-# {"name":"ivan", "surname":"chelovekov", "patronymic":"petrovic", "mail":"test@mail.ru", "phone":"+79205262623"}
 
 
 class CompanyModel(ID):
@@ -54,7 +52,6 @@ class CompanyModel(ID):
     phone = models.CharField(validators=[phone_regex], max_length=17)
     mail = models.EmailField(max_length=100)
     description = models.CharField(max_length=500, blank=True)
-# {"name":"jest", "legal_address": "abb", "physical_address":"aabb", "phone":"+79205262623","mail":"test@mail.ru"}
 
 
 class CuratorModel(ID, Human):
@@ -64,14 +61,12 @@ class CuratorModel(ID, Human):
         "UniversityTable", on_delete=models.DO_NOTHING)
     recommended = models.ForeignKey(
         "RecommendedTable", on_delete=models.CASCADE, blank=True, null=True)
-# {"university":"MIIGAIK"}
 
 
 class MentorModel(ID, Human):
     # login = models.OneToOneField(UserModel, on_delete=models.CASCADE)
     # password = models.OneToOneField(UserModel, on_delete=models.CASCADE)
     curator = models.ForeignKey(CuratorModel, on_delete=models.DO_NOTHING)
-# {"curator":"594238759"}
 
 
 class StudentModel(ID, Human):
@@ -81,12 +76,11 @@ class StudentModel(ID, Human):
     profession = models.CharField(max_length=30)
     resume = models.CharField(max_length=1000, blank=True)
     active_vacancy = models.ForeignKey(
-        "VacancyModel", on_delete=models.DO_NOTHING, blank=True)
+        "VacancyModel", on_delete=models.DO_NOTHING, blank=True,null=True)
     # __table_args__ = (
     #     models.Index('student_short', 'name', 'surname', 'patronymic',
     #                  'profession', 'mentor_id')
     # )
-# {"mentor":"447513381", profession":"programmer", "resume":"i can do something. hire me pls"}
 
 
 class VacancyModel(ID):
@@ -98,14 +92,13 @@ class VacancyModel(ID):
         ('completed', 'completed')
     ]
     company = models.ForeignKey(CompanyModel, on_delete=models.DO_NOTHING)
-    curator = models.IntegerField()
+    curator = models.ForeignKey(CuratorModel, on_delete=models.DO_NOTHING)
     status = models.CharField(max_length=20, choices=VACANCYSTATUS)
     tasks = models.CharField(max_length=250)
     start_date = models.DateField(auto_now_add=True)
     end_date = models.DateField(auto_now_add=True)
     address = models.CharField(max_length=250)
     description = models.CharField(max_length=250)
-# {"status":"checked", "tasks":"do something pls", "start_date":"15.07.2023", "end_date":"22.07.2023", "address":"aabb", "description":"do something pls"}
 
 
 # class TaskModel(ID):
@@ -136,7 +129,6 @@ class VacancyModel(ID):
 
 class UniversityTable(models.Model):
     university = models.CharField(max_length=100, primary_key=True)
-# {"university":"MIIGAIK"}
 
 
 class WorkersTable(models.Model):
@@ -147,7 +139,6 @@ class WorkersTable(models.Model):
 
     def __str__(self):
         return f"{self.profession}: {self.amount}"
-# {"profession":"programmer", "amount":"5"}
 
 
 class RecommendedTable(models.Model):

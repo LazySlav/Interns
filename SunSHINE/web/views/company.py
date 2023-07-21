@@ -1,12 +1,17 @@
 import ast
+import json
+from uuid import UUID
 from django.forms import ValidationError
 from django.http import HttpRequest, JsonResponse
 from web.models import CompanyModel
 from django.db import models
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 def __parse_request(request: HttpRequest):
-    return ast.literal_eval(request.body.decode('utf-8'))
+    if (data:=request.body.decode('utf-8')) is not "":
+        return ast.literal_eval(request.body.decode('utf-8'))
+    return dict()
 
 
 def __parse_model(obj: models.Model):
@@ -20,17 +25,22 @@ def __id_check(id):
         raise ValidationError("No id provided")
 
 
-def main(request: HttpRequest, id: int | None = None):
+def main(request: HttpRequest, id: UUID | None = None):
 
     if request.method == 'GET':
-        id = __parse_request(request)["id"]
-        __id_check(id)
-        try:
-            obj = CompanyModel.objects.get(id=id)
-        except (CompanyModel.DoesNotExist, CompanyModel.MultipleObjectsReturned):
-            raise
-        data = __parse_model(obj)
-        return JsonResponse(data)
+        id = __parse_request(request).get("id",None)
+        if id:
+            try:
+                obj = CompanyModel.objects.get(id=id)
+            except (CompanyModel.DoesNotExist, CompanyModel.MultipleObjectsReturned):
+                raise
+            data = __parse_model(obj)
+            return JsonResponse(data)
+        else:
+            # company_list = list(CompanyModel.objects.all().values())
+            # company_dict = json.dumps(company_list, cls=DjangoJSONEncoder)
+            # print(company_dict)
+            # return JsonResponse({"companies":company_dict})
 
     elif request.method == "POST":
         data = __parse_request(request)

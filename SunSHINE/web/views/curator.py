@@ -1,4 +1,5 @@
 import ast
+from uuid import UUID
 from django.forms import ValidationError
 from django.http import HttpRequest, JsonResponse
 from web.models import CuratorModel, UniversityTable
@@ -22,7 +23,7 @@ def __id_check(id):
         raise ValidationError("No id provided")
 
 
-def main(request: HttpRequest, id: int | None = None):
+def main(request: HttpRequest, id: UUID | None = None):
 
 
     if request.method == 'GET':
@@ -59,8 +60,8 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         data = __parse_request(request)
         data.pop("id")
-        if data.get("university",None) is not None:
-            data["university"]=UniversityTable.objects.get(university=data["university"])
+        if (university:=data.get("university",None)) is not None:
+            data["university"]=UniversityTable.objects.get(university=university)
         {setattr(obj, attr, val) for attr, val in data.items()}
         obj.save(update_fields=data.keys())
         return JsonResponse({"msg": f"Successfully updated entry with id={id}"}, status=200)

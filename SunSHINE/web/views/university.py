@@ -1,4 +1,5 @@
 import ast
+from uuid import UUID
 from django.forms import ValidationError
 from django.http import HttpRequest, JsonResponse
 from web.models import UniversityTable
@@ -21,7 +22,7 @@ def __id_check(university):
         raise ValidationError("No university provided")
 
 
-def main(request: HttpRequest, university: int | None = None):
+def main(request: HttpRequest, university: UUID | None = None):
 
 
     if request.method == 'GET':

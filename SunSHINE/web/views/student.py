@@ -1,7 +1,8 @@
 import ast
+from uuid import UUID
 from django.forms import ValidationError
 from django.http import HttpRequest, JsonResponse
-from web.models import StudentModel
+from web.models import MentorModel, StudentModel
 from django.db import models
 
 def __parse_request(request: HttpRequest):
@@ -19,7 +20,7 @@ def __id_check(id):
         raise ValidationError("No id provided")
 
 
-def main(request: HttpRequest, id: int | None = None):
+def main(request: HttpRequest, id: UUID | None = None):
 
 
     if request.method == 'GET':
@@ -35,6 +36,7 @@ def main(request: HttpRequest, id: int | None = None):
 
     elif request.method == "POST":
         data = __parse_request(request)
+        data["mentor"] = MentorModel.objects.get(id=data["mentor"])
         obj = StudentModel(**data)
         try:
             obj.full_clean()
@@ -42,6 +44,7 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         obj.save()
         data["id"] = obj.id
+        data["mentor"] = obj.mentor.id
         return JsonResponse(data, status=201)
     
 
@@ -54,6 +57,8 @@ def main(request: HttpRequest, id: int | None = None):
             raise
         data = __parse_request(request)
         data.pop("id")
+        if (mentor_id:=data.get("mentor",None)) is not None:
+            data["mentor"] = MentorModel.objects.get(id=mentor_id)
         {setattr(obj, attr, val) for attr, val in data.items()}
         obj.save(update_fields=data.keys())
         return JsonResponse({"msg": f"Successfully updated entry with id={id}"}, status=200)
